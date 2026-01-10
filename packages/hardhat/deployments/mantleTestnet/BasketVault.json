@@ -1,0 +1,1100 @@
+{
+  "address": "0xb62C526E8bE91923C8fFBa208908125e59712D73",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_basketRegistry",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_basketOracle",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [],
+      "name": "BasketDoesNotExist",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "BasketNotActive",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "BasketTokenAlreadyRegistered",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "BasketTokenNotRegistered",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "CollateralRatioTooLow",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InsufficientCollateral",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InsufficientDebt",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InvalidAmount",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NoDebtToLiquidate",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NotAuthorizedLiquidator",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "owner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnableInvalidOwner",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "OwnableUnauthorizedAccount",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "PositionNotLiquidatable",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "ReentrancyGuardReentrantCall",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "TransferFailed",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "ZeroAddress",
+      "type": "error"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "basketId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "newTotalDebt",
+          "type": "uint256"
+        }
+      ],
+      "name": "BasketBurned",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "basketId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "newTotalDebt",
+          "type": "uint256"
+        }
+      ],
+      "name": "BasketMinted",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "basketId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "tokenAddress",
+          "type": "address"
+        }
+      ],
+      "name": "BasketTokenRegistered",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "basketId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "newTotalCollateral",
+          "type": "uint256"
+        }
+      ],
+      "name": "CollateralDeposited",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "basketId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "newTotalCollateral",
+          "type": "uint256"
+        }
+      ],
+      "name": "CollateralWithdrawn",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "factory",
+          "type": "address"
+        }
+      ],
+      "name": "FactoryUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "basketId",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "liquidator",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "debtRepaid",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "collateralSeized",
+          "type": "uint256"
+        }
+      ],
+      "name": "Liquidated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "oldLiquidator",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "newLiquidator",
+          "type": "address"
+        }
+      ],
+      "name": "LiquidatorUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "oldOracle",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "newOracle",
+          "type": "address"
+        }
+      ],
+      "name": "OracleUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "previousOwner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnershipTransferred",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "COLLATERAL_RATIO",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "LIQUIDATION_PENALTY",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "LIQUIDATION_THRESHOLD",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "PRECISION",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "authorizedFactory",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "basketOracle",
+      "outputs": [
+        {
+          "internalType": "contract BasketOracle",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "basketRegistry",
+      "outputs": [
+        {
+          "internalType": "contract BasketRegistry",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "basketTokens",
+      "outputs": [
+        {
+          "internalType": "contract EquiBasketToken",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "basketId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "burnBasket",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "basketId",
+          "type": "uint256"
+        }
+      ],
+      "name": "depositCollateral",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "basketId",
+          "type": "uint256"
+        }
+      ],
+      "name": "getCollateralRatio",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "basketId",
+          "type": "uint256"
+        }
+      ],
+      "name": "getMaxMintable",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "basketId",
+          "type": "uint256"
+        }
+      ],
+      "name": "getUserPosition",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "collateral",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "debt",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "collateralRatio",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "liquidatable",
+              "type": "bool"
+            }
+          ],
+          "internalType": "struct BasketVault.UserPositionView",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "basketId",
+          "type": "uint256"
+        }
+      ],
+      "name": "isLiquidatable",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "basketId",
+          "type": "uint256"
+        }
+      ],
+      "name": "liquidate",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "liquidator",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "basketId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "mintBasket",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "basketId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "tokenAddress",
+          "type": "address"
+        }
+      ],
+      "name": "registerBasketToken",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "renounceOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_factory",
+          "type": "address"
+        }
+      ],
+      "name": "setAuthorizedFactory",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_liquidator",
+          "type": "address"
+        }
+      ],
+      "name": "setLiquidator",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_newOracle",
+          "type": "address"
+        }
+      ],
+      "name": "setOracle",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "transferOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "userCollateral",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "userDebt",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "basketId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "withdrawCollateral",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "stateMutability": "payable",
+      "type": "receive"
+    }
+  ],
+  "transactionHash": "0x3c5839028b4c558dfb3cb84b8e5031c3f95637e8acdbb95cf4ea37ad906ead6c",
+  "receipt": {
+    "to": null,
+    "from": "0x15ac9ed46c545D594B57aFe20F0f268F182A481f",
+    "contractAddress": "0xb62C526E8bE91923C8fFBa208908125e59712D73",
+    "transactionIndex": 1,
+    "gasUsed": "5296048819",
+    "logsBloom": "0x00000000000000000000000000000000000000040000000000800000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000001000000004000000000000000000000000000020000000000000000010800000000000000000000000000000000400000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000420000000000000000000000000000000000000000000000000000000000000000000",
+    "blockHash": "0x12ff92668285bb73de1cb4f30ffe090a26174c4737f09c37603e1581a465460d",
+    "transactionHash": "0x3c5839028b4c558dfb3cb84b8e5031c3f95637e8acdbb95cf4ea37ad906ead6c",
+    "logs": [
+      {
+        "transactionIndex": 1,
+        "blockNumber": 32782052,
+        "transactionHash": "0x3c5839028b4c558dfb3cb84b8e5031c3f95637e8acdbb95cf4ea37ad906ead6c",
+        "address": "0xb62C526E8bE91923C8fFBa208908125e59712D73",
+        "topics": [
+          "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0",
+          "0x0000000000000000000000000000000000000000000000000000000000000000",
+          "0x00000000000000000000000015ac9ed46c545d594b57afe20f0f268f182a481f"
+        ],
+        "data": "0x",
+        "logIndex": 0,
+        "blockHash": "0x12ff92668285bb73de1cb4f30ffe090a26174c4737f09c37603e1581a465460d"
+      }
+    ],
+    "blockNumber": 32782052,
+    "cumulativeGasUsed": "5296104084",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [
+    "0x4D03bfC19572c19E57B90Ca2Bb585abb2F005068",
+    "0xc0c575bD5D58f9f19C84a2EEB911FcAbd38654c8"
+  ],
+  "numDeployments": 1,
+  "solcInputHash": "37763e3990532bd3f9244f26b3e3871c",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.20+commit.a1b79de6\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_basketRegistry\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_basketOracle\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"BasketDoesNotExist\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"BasketNotActive\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"BasketTokenAlreadyRegistered\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"BasketTokenNotRegistered\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"CollateralRatioTooLow\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InsufficientCollateral\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InsufficientDebt\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidAmount\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NoDebtToLiquidate\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NotAuthorizedLiquidator\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"}],\"name\":\"OwnableInvalidOwner\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"OwnableUnauthorizedAccount\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"PositionNotLiquidatable\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ReentrancyGuardReentrantCall\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"TransferFailed\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ZeroAddress\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"basketId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"newTotalDebt\",\"type\":\"uint256\"}],\"name\":\"BasketBurned\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"basketId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"newTotalDebt\",\"type\":\"uint256\"}],\"name\":\"BasketMinted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"basketId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"tokenAddress\",\"type\":\"address\"}],\"name\":\"BasketTokenRegistered\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"basketId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"newTotalCollateral\",\"type\":\"uint256\"}],\"name\":\"CollateralDeposited\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"basketId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"newTotalCollateral\",\"type\":\"uint256\"}],\"name\":\"CollateralWithdrawn\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"factory\",\"type\":\"address\"}],\"name\":\"FactoryUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"basketId\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"liquidator\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"debtRepaid\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"collateralSeized\",\"type\":\"uint256\"}],\"name\":\"Liquidated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"oldLiquidator\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"newLiquidator\",\"type\":\"address\"}],\"name\":\"LiquidatorUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"oldOracle\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"newOracle\",\"type\":\"address\"}],\"name\":\"OracleUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"COLLATERAL_RATIO\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"LIQUIDATION_PENALTY\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"LIQUIDATION_THRESHOLD\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"PRECISION\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"authorizedFactory\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"basketOracle\",\"outputs\":[{\"internalType\":\"contract BasketOracle\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"basketRegistry\",\"outputs\":[{\"internalType\":\"contract BasketRegistry\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"basketTokens\",\"outputs\":[{\"internalType\":\"contract EquiBasketToken\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"basketId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"burnBasket\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"basketId\",\"type\":\"uint256\"}],\"name\":\"depositCollateral\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"basketId\",\"type\":\"uint256\"}],\"name\":\"getCollateralRatio\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"basketId\",\"type\":\"uint256\"}],\"name\":\"getMaxMintable\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"basketId\",\"type\":\"uint256\"}],\"name\":\"getUserPosition\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"collateral\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"debt\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"collateralRatio\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"liquidatable\",\"type\":\"bool\"}],\"internalType\":\"struct BasketVault.UserPositionView\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"basketId\",\"type\":\"uint256\"}],\"name\":\"isLiquidatable\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"basketId\",\"type\":\"uint256\"}],\"name\":\"liquidate\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"liquidator\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"basketId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"mintBasket\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"basketId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"tokenAddress\",\"type\":\"address\"}],\"name\":\"registerBasketToken\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_factory\",\"type\":\"address\"}],\"name\":\"setAuthorizedFactory\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_liquidator\",\"type\":\"address\"}],\"name\":\"setLiquidator\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_newOracle\",\"type\":\"address\"}],\"name\":\"setOracle\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"userCollateral\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"userDebt\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"basketId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"withdrawCollateral\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"stateMutability\":\"payable\",\"type\":\"receive\"}],\"devdoc\":{\"details\":\"This version uses native MNT (msg.value) instead of ERC20 MockMNT      On Mantle, MNT is the native gas token similar to ETH on Ethereum.            Key features:      - State is (user \\u2192 basketId \\u2192 position) scoped      - A user can have multiple baskets with different risk profiles      - Each (user, basketId) pair is an independent position      - Uses NATIVE MNT (msg.value) as collateral       COLLATERAL FLOW:      1. User deposits native MNT collateral via msg.value      2. User can mint basket tokens if they have sufficient collateral      3. When minting, debt is created and tracked per (user, basketId)      4. When burning, debt is repaid and collateral is freed\",\"errors\":{\"OwnableInvalidOwner(address)\":[{\"details\":\"The owner is not a valid owner account. (eg. `address(0)`)\"}],\"OwnableUnauthorizedAccount(address)\":[{\"details\":\"The caller account is not authorized to perform an operation.\"}],\"ReentrancyGuardReentrantCall()\":[{\"details\":\"Unauthorized reentrant call.\"}]},\"kind\":\"dev\",\"methods\":{\"constructor\":{\"params\":{\"_basketOracle\":\"Address of the BasketOracle\",\"_basketRegistry\":\"Address of the BasketRegistry\"}},\"depositCollateral(uint256)\":{\"details\":\"Send MNT via msg.value\",\"params\":{\"basketId\":\"The basket to deposit collateral for\"}},\"mintBasket(uint256,uint256)\":{\"details\":\"Requires sufficient collateral to maintain COLLATERAL_RATIO\"},\"owner()\":{\"details\":\"Returns the address of the current owner.\"},\"renounceOwnership()\":{\"details\":\"Leaves the contract without owner. It will not be possible to call `onlyOwner` functions. Can only be called by the current owner. NOTE: Renouncing ownership will leave the contract without an owner, thereby disabling any functionality that is only available to the owner.\"},\"setAuthorizedFactory(address)\":{\"params\":{\"_factory\":\"Address of the BasketFactory contract\"}},\"transferOwnership(address)\":{\"details\":\"Transfers ownership of the contract to a new account (`newOwner`). Can only be called by the current owner.\"},\"withdrawCollateral(uint256,uint256)\":{\"details\":\"Can only withdraw excess collateral that maintains required ratio\"}},\"title\":\"BasketVault\",\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"COLLATERAL_RATIO()\":{\"notice\":\"Required collateral ratio for minting (500%)\"},\"LIQUIDATION_PENALTY()\":{\"notice\":\"Liquidation penalty in basis points (10% = 1000 bp)\"},\"LIQUIDATION_THRESHOLD()\":{\"notice\":\"Liquidation threshold (150%)\"},\"PRECISION()\":{\"notice\":\"Decimal precision for calculations (1e18)\"},\"authorizedFactory()\":{\"notice\":\"Authorized factory that can register basket tokens\"},\"basketOracle()\":{\"notice\":\"Reference to the basket oracle for pricing\"},\"basketRegistry()\":{\"notice\":\"Reference to the basket registry\"},\"basketTokens(uint256)\":{\"notice\":\"Mapping from basketId to its token contract\"},\"burnBasket(uint256,uint256)\":{\"notice\":\"Burn basket tokens to repay debt and free collateral\"},\"constructor\":{\"notice\":\"Initialize the vault with dependencies\"},\"depositCollateral(uint256)\":{\"notice\":\"Deposit native MNT collateral for a specific basket\"},\"liquidator()\":{\"notice\":\"Authorized liquidator address (Vincent bot)\"},\"mintBasket(uint256,uint256)\":{\"notice\":\"Mint basket tokens by taking on debt\"},\"registerBasketToken(uint256,address)\":{\"notice\":\"Register a basket token for a basket\"},\"setAuthorizedFactory(address)\":{\"notice\":\"Set the authorized factory address\"},\"userCollateral(address,uint256)\":{\"notice\":\"User collateral per basket: user => basketId => collateral amount (in MNT, 18 decimals)\"},\"userDebt(address,uint256)\":{\"notice\":\"User debt per basket: user => basketId => debt amount (in basket tokens, 18 decimals)\"},\"withdrawCollateral(uint256,uint256)\":{\"notice\":\"Withdraw native MNT collateral from a specific basket\"}},\"notice\":\"Vault for managing basket-scoped collateral positions using NATIVE MNT\",\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/BasketVault.sol\":\"BasketVault\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"@openzeppelin/contracts/access/Ownable.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// OpenZeppelin Contracts (last updated v5.0.0) (access/Ownable.sol)\\n\\npragma solidity ^0.8.20;\\n\\nimport {Context} from \\\"../utils/Context.sol\\\";\\n\\n/**\\n * @dev Contract module which provides a basic access control mechanism, where\\n * there is an account (an owner) that can be granted exclusive access to\\n * specific functions.\\n *\\n * The initial owner is set to the address provided by the deployer. This can\\n * later be changed with {transferOwnership}.\\n *\\n * This module is used through inheritance. It will make available the modifier\\n * `onlyOwner`, which can be applied to your functions to restrict their use to\\n * the owner.\\n */\\nabstract contract Ownable is Context {\\n    address private _owner;\\n\\n    /**\\n     * @dev The caller account is not authorized to perform an operation.\\n     */\\n    error OwnableUnauthorizedAccount(address account);\\n\\n    /**\\n     * @dev The owner is not a valid owner account. (eg. `address(0)`)\\n     */\\n    error OwnableInvalidOwner(address owner);\\n\\n    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);\\n\\n    /**\\n     * @dev Initializes the contract setting the address provided by the deployer as the initial owner.\\n     */\\n    constructor(address initialOwner) {\\n        if (initialOwner == address(0)) {\\n            revert OwnableInvalidOwner(address(0));\\n        }\\n        _transferOwnership(initialOwner);\\n    }\\n\\n    /**\\n     * @dev Throws if called by any account other than the owner.\\n     */\\n    modifier onlyOwner() {\\n        _checkOwner();\\n        _;\\n    }\\n\\n    /**\\n     * @dev Returns the address of the current owner.\\n     */\\n    function owner() public view virtual returns (address) {\\n        return _owner;\\n    }\\n\\n    /**\\n     * @dev Throws if the sender is not the owner.\\n     */\\n    function _checkOwner() internal view virtual {\\n        if (owner() != _msgSender()) {\\n            revert OwnableUnauthorizedAccount(_msgSender());\\n        }\\n    }\\n\\n    /**\\n     * @dev Leaves the contract without owner. It will not be possible to call\\n     * `onlyOwner` functions. Can only be called by the current owner.\\n     *\\n     * NOTE: Renouncing ownership will leave the contract without an owner,\\n     * thereby disabling any functionality that is only available to the owner.\\n     */\\n    function renounceOwnership() public virtual onlyOwner {\\n        _transferOwnership(address(0));\\n    }\\n\\n    /**\\n     * @dev Transfers ownership of the contract to a new account (`newOwner`).\\n     * Can only be called by the current owner.\\n     */\\n    function transferOwnership(address newOwner) public virtual onlyOwner {\\n        if (newOwner == address(0)) {\\n            revert OwnableInvalidOwner(address(0));\\n        }\\n        _transferOwnership(newOwner);\\n    }\\n\\n    /**\\n     * @dev Transfers ownership of the contract to a new account (`newOwner`).\\n     * Internal function without access restriction.\\n     */\\n    function _transferOwnership(address newOwner) internal virtual {\\n        address oldOwner = _owner;\\n        _owner = newOwner;\\n        emit OwnershipTransferred(oldOwner, newOwner);\\n    }\\n}\\n\",\"keccak256\":\"0xff6d0bb2e285473e5311d9d3caacb525ae3538a80758c10649a4d61029b017bb\",\"license\":\"MIT\"},\"@openzeppelin/contracts/interfaces/draft-IERC6093.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// OpenZeppelin Contracts (last updated v5.0.0) (interfaces/draft-IERC6093.sol)\\npragma solidity ^0.8.20;\\n\\n/**\\n * @dev Standard ERC20 Errors\\n * Interface of the https://eips.ethereum.org/EIPS/eip-6093[ERC-6093] custom errors for ERC20 tokens.\\n */\\ninterface IERC20Errors {\\n    /**\\n     * @dev Indicates an error related to the current `balance` of a `sender`. Used in transfers.\\n     * @param sender Address whose tokens are being transferred.\\n     * @param balance Current balance for the interacting account.\\n     * @param needed Minimum amount required to perform a transfer.\\n     */\\n    error ERC20InsufficientBalance(address sender, uint256 balance, uint256 needed);\\n\\n    /**\\n     * @dev Indicates a failure with the token `sender`. Used in transfers.\\n     * @param sender Address whose tokens are being transferred.\\n     */\\n    error ERC20InvalidSender(address sender);\\n\\n    /**\\n     * @dev Indicates a failure with the token `receiver`. Used in transfers.\\n     * @param receiver Address to which tokens are being transferred.\\n     */\\n    error ERC20InvalidReceiver(address receiver);\\n\\n    /**\\n     * @dev Indicates a failure with the `spender`\\u2019s `allowance`. Used in transfers.\\n     * @param spender Address that may be allowed to operate on tokens without being their owner.\\n     * @param allowance Amount of tokens a `spender` is allowed to operate with.\\n     * @param needed Minimum amount required to perform a transfer.\\n     */\\n    error ERC20InsufficientAllowance(address spender, uint256 allowance, uint256 needed);\\n\\n    /**\\n     * @dev Indicates a failure with the `approver` of a token to be approved. Used in approvals.\\n     * @param approver Address initiating an approval operation.\\n     */\\n    error ERC20InvalidApprover(address approver);\\n\\n    /**\\n     * @dev Indicates a failure with the `spender` to be approved. Used in approvals.\\n     * @param spender Address that may be allowed to operate on tokens without being their owner.\\n     */\\n    error ERC20InvalidSpender(address spender);\\n}\\n\\n/**\\n * @dev Standard ERC721 Errors\\n * Interface of the https://eips.ethereum.org/EIPS/eip-6093[ERC-6093] custom errors for ERC721 tokens.\\n */\\ninterface IERC721Errors {\\n    /**\\n     * @dev Indicates that an address can't be an owner. For example, `address(0)` is a forbidden owner in EIP-20.\\n     * Used in balance queries.\\n     * @param owner Address of the current owner of a token.\\n     */\\n    error ERC721InvalidOwner(address owner);\\n\\n    /**\\n     * @dev Indicates a `tokenId` whose `owner` is the zero address.\\n     * @param tokenId Identifier number of a token.\\n     */\\n    error ERC721NonexistentToken(uint256 tokenId);\\n\\n    /**\\n     * @dev Indicates an error related to the ownership over a particular token. Used in transfers.\\n     * @param sender Address whose tokens are being transferred.\\n     * @param tokenId Identifier number of a token.\\n     * @param owner Address of the current owner of a token.\\n     */\\n    error ERC721IncorrectOwner(address sender, uint256 tokenId, address owner);\\n\\n    /**\\n     * @dev Indicates a failure with the token `sender`. Used in transfers.\\n     * @param sender Address whose tokens are being transferred.\\n     */\\n    error ERC721InvalidSender(address sender);\\n\\n    /**\\n     * @dev Indicates a failure with the token `receiver`. Used in transfers.\\n     * @param receiver Address to which tokens are being transferred.\\n     */\\n    error ERC721InvalidReceiver(address receiver);\\n\\n    /**\\n     * @dev Indicates a failure with the `operator`\\u2019s approval. Used in transfers.\\n     * @param operator Address that may be allowed to operate on tokens without being their owner.\\n     * @param tokenId Identifier number of a token.\\n     */\\n    error ERC721InsufficientApproval(address operator, uint256 tokenId);\\n\\n    /**\\n     * @dev Indicates a failure with the `approver` of a token to be approved. Used in approvals.\\n     * @param approver Address initiating an approval operation.\\n     */\\n    error ERC721InvalidApprover(address approver);\\n\\n    /**\\n     * @dev Indicates a failure with the `operator` to be approved. Used in approvals.\\n     * @param operator Address that may be allowed to operate on tokens without being their owner.\\n     */\\n    error ERC721InvalidOperator(address operator);\\n}\\n\\n/**\\n * @dev Standard ERC1155 Errors\\n * Interface of the https://eips.ethereum.org/EIPS/eip-6093[ERC-6093] custom errors for ERC1155 tokens.\\n */\\ninterface IERC1155Errors {\\n    /**\\n     * @dev Indicates an error related to the current `balance` of a `sender`. Used in transfers.\\n     * @param sender Address whose tokens are being transferred.\\n     * @param balance Current balance for the interacting account.\\n     * @param needed Minimum amount required to perform a transfer.\\n     * @param tokenId Identifier number of a token.\\n     */\\n    error ERC1155InsufficientBalance(address sender, uint256 balance, uint256 needed, uint256 tokenId);\\n\\n    /**\\n     * @dev Indicates a failure with the token `sender`. Used in transfers.\\n     * @param sender Address whose tokens are being transferred.\\n     */\\n    error ERC1155InvalidSender(address sender);\\n\\n    /**\\n     * @dev Indicates a failure with the token `receiver`. Used in transfers.\\n     * @param receiver Address to which tokens are being transferred.\\n     */\\n    error ERC1155InvalidReceiver(address receiver);\\n\\n    /**\\n     * @dev Indicates a failure with the `operator`\\u2019s approval. Used in transfers.\\n     * @param operator Address that may be allowed to operate on tokens without being their owner.\\n     * @param owner Address of the current owner of a token.\\n     */\\n    error ERC1155MissingApprovalForAll(address operator, address owner);\\n\\n    /**\\n     * @dev Indicates a failure with the `approver` of a token to be approved. Used in approvals.\\n     * @param approver Address initiating an approval operation.\\n     */\\n    error ERC1155InvalidApprover(address approver);\\n\\n    /**\\n     * @dev Indicates a failure with the `operator` to be approved. Used in approvals.\\n     * @param operator Address that may be allowed to operate on tokens without being their owner.\\n     */\\n    error ERC1155InvalidOperator(address operator);\\n\\n    /**\\n     * @dev Indicates an array length mismatch between ids and values in a safeBatchTransferFrom operation.\\n     * Used in batch transfers.\\n     * @param idsLength Length of the array of token identifiers\\n     * @param valuesLength Length of the array of token amounts\\n     */\\n    error ERC1155InvalidArrayLength(uint256 idsLength, uint256 valuesLength);\\n}\\n\",\"keccak256\":\"0x60c65f701957fdd6faea1acb0bb45825791d473693ed9ecb34726fdfaa849dd7\",\"license\":\"MIT\"},\"@openzeppelin/contracts/token/ERC20/ERC20.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// OpenZeppelin Contracts (last updated v5.0.0) (token/ERC20/ERC20.sol)\\n\\npragma solidity ^0.8.20;\\n\\nimport {IERC20} from \\\"./IERC20.sol\\\";\\nimport {IERC20Metadata} from \\\"./extensions/IERC20Metadata.sol\\\";\\nimport {Context} from \\\"../../utils/Context.sol\\\";\\nimport {IERC20Errors} from \\\"../../interfaces/draft-IERC6093.sol\\\";\\n\\n/**\\n * @dev Implementation of the {IERC20} interface.\\n *\\n * This implementation is agnostic to the way tokens are created. This means\\n * that a supply mechanism has to be added in a derived contract using {_mint}.\\n *\\n * TIP: For a detailed writeup see our guide\\n * https://forum.openzeppelin.com/t/how-to-implement-erc20-supply-mechanisms/226[How\\n * to implement supply mechanisms].\\n *\\n * The default value of {decimals} is 18. To change this, you should override\\n * this function so it returns a different value.\\n *\\n * We have followed general OpenZeppelin Contracts guidelines: functions revert\\n * instead returning `false` on failure. This behavior is nonetheless\\n * conventional and does not conflict with the expectations of ERC20\\n * applications.\\n *\\n * Additionally, an {Approval} event is emitted on calls to {transferFrom}.\\n * This allows applications to reconstruct the allowance for all accounts just\\n * by listening to said events. Other implementations of the EIP may not emit\\n * these events, as it isn't required by the specification.\\n */\\nabstract contract ERC20 is Context, IERC20, IERC20Metadata, IERC20Errors {\\n    mapping(address account => uint256) private _balances;\\n\\n    mapping(address account => mapping(address spender => uint256)) private _allowances;\\n\\n    uint256 private _totalSupply;\\n\\n    string private _name;\\n    string private _symbol;\\n\\n    /**\\n     * @dev Sets the values for {name} and {symbol}.\\n     *\\n     * All two of these values are immutable: they can only be set once during\\n     * construction.\\n     */\\n    constructor(string memory name_, string memory symbol_) {\\n        _name = name_;\\n        _symbol = symbol_;\\n    }\\n\\n    /**\\n     * @dev Returns the name of the token.\\n     */\\n    function name() public view virtual returns (string memory) {\\n        return _name;\\n    }\\n\\n    /**\\n     * @dev Returns the symbol of the token, usually a shorter version of the\\n     * name.\\n     */\\n    function symbol() public view virtual returns (string memory) {\\n        return _symbol;\\n    }\\n\\n    /**\\n     * @dev Returns the number of decimals used to get its user representation.\\n     * For example, if `decimals` equals `2`, a balance of `505` tokens should\\n     * be displayed to a user as `5.05` (`505 / 10 ** 2`).\\n     *\\n     * Tokens usually opt for a value of 18, imitating the relationship between\\n     * Ether and Wei. This is the default value returned by this function, unless\\n     * it's overridden.\\n     *\\n     * NOTE: This information is only used for _display_ purposes: it in\\n     * no way affects any of the arithmetic of the contract, including\\n     * {IERC20-balanceOf} and {IERC20-transfer}.\\n     */\\n    function decimals() public view virtual returns (uint8) {\\n        return 18;\\n    }\\n\\n    /**\\n     * @dev See {IERC20-totalSupply}.\\n     */\\n    function totalSupply() public view virtual returns (uint256) {\\n        return _totalSupply;\\n    }\\n\\n    /**\\n     * @dev See {IERC20-balanceOf}.\\n     */\\n    function balanceOf(address account) public view virtual returns (uint256) {\\n        return _balances[account];\\n    }\\n\\n    /**\\n     * @dev See {IERC20-transfer}.\\n     *\\n     * Requirements:\\n     *\\n     * - `to` cannot be the zero address.\\n     * - the caller must have a balance of at least `value`.\\n     */\\n    function transfer(address to, uint256 value) public virtual returns (bool) {\\n        address owner = _msgSender();\\n        _transfer(owner, to, value);\\n        return true;\\n    }\\n\\n    /**\\n     * @dev See {IERC20-allowance}.\\n     */\\n    function allowance(address owner, address spender) public view virtual returns (uint256) {\\n        return _allowances[owner][spender];\\n    }\\n\\n    /**\\n     * @dev See {IERC20-approve}.\\n     *\\n     * NOTE: If `value` is the maximum `uint256`, the allowance is not updated on\\n     * `transferFrom`. This is semantically equivalent to an infinite approval.\\n     *\\n     * Requirements:\\n     *\\n     * - `spender` cannot be the zero address.\\n     */\\n    function approve(address spender, uint256 value) public virtual returns (bool) {\\n        address owner = _msgSender();\\n        _approve(owner, spender, value);\\n        return true;\\n    }\\n\\n    /**\\n     * @dev See {IERC20-transferFrom}.\\n     *\\n     * Emits an {Approval} event indicating the updated allowance. This is not\\n     * required by the EIP. See the note at the beginning of {ERC20}.\\n     *\\n     * NOTE: Does not update the allowance if the current allowance\\n     * is the maximum `uint256`.\\n     *\\n     * Requirements:\\n     *\\n     * - `from` and `to` cannot be the zero address.\\n     * - `from` must have a balance of at least `value`.\\n     * - the caller must have allowance for ``from``'s tokens of at least\\n     * `value`.\\n     */\\n    function transferFrom(address from, address to, uint256 value) public virtual returns (bool) {\\n        address spender = _msgSender();\\n        _spendAllowance(from, spender, value);\\n        _transfer(from, to, value);\\n        return true;\\n    }\\n\\n    /**\\n     * @dev Moves a `value` amount of tokens from `from` to `to`.\\n     *\\n     * This internal function is equivalent to {transfer}, and can be used to\\n     * e.g. implement automatic token fees, slashing mechanisms, etc.\\n     *\\n     * Emits a {Transfer} event.\\n     *\\n     * NOTE: This function is not virtual, {_update} should be overridden instead.\\n     */\\n    function _transfer(address from, address to, uint256 value) internal {\\n        if (from == address(0)) {\\n            revert ERC20InvalidSender(address(0));\\n        }\\n        if (to == address(0)) {\\n            revert ERC20InvalidReceiver(address(0));\\n        }\\n        _update(from, to, value);\\n    }\\n\\n    /**\\n     * @dev Transfers a `value` amount of tokens from `from` to `to`, or alternatively mints (or burns) if `from`\\n     * (or `to`) is the zero address. All customizations to transfers, mints, and burns should be done by overriding\\n     * this function.\\n     *\\n     * Emits a {Transfer} event.\\n     */\\n    function _update(address from, address to, uint256 value) internal virtual {\\n        if (from == address(0)) {\\n            // Overflow check required: The rest of the code assumes that totalSupply never overflows\\n            _totalSupply += value;\\n        } else {\\n            uint256 fromBalance = _balances[from];\\n            if (fromBalance < value) {\\n                revert ERC20InsufficientBalance(from, fromBalance, value);\\n            }\\n            unchecked {\\n                // Overflow not possible: value <= fromBalance <= totalSupply.\\n                _balances[from] = fromBalance - value;\\n            }\\n        }\\n\\n        if (to == address(0)) {\\n            unchecked {\\n                // Overflow not possible: value <= totalSupply or value <= fromBalance <= totalSupply.\\n                _totalSupply -= value;\\n            }\\n        } else {\\n            unchecked {\\n                // Overflow not possible: balance + value is at most totalSupply, which we know fits into a uint256.\\n                _balances[to] += value;\\n            }\\n        }\\n\\n        emit Transfer(from, to, value);\\n    }\\n\\n    /**\\n     * @dev Creates a `value` amount of tokens and assigns them to `account`, by transferring it from address(0).\\n     * Relies on the `_update` mechanism\\n     *\\n     * Emits a {Transfer} event with `from` set to the zero address.\\n     *\\n     * NOTE: This function is not virtual, {_update} should be overridden instead.\\n     */\\n    function _mint(address account, uint256 value) internal {\\n        if (account == address(0)) {\\n            revert ERC20InvalidReceiver(address(0));\\n        }\\n        _update(address(0), account, value);\\n    }\\n\\n    /**\\n     * @dev Destroys a `value` amount of tokens from `account`, lowering the total supply.\\n     * Relies on the `_update` mechanism.\\n     *\\n     * Emits a {Transfer} event with `to` set to the zero address.\\n     *\\n     * NOTE: This function is not virtual, {_update} should be overridden instead\\n     */\\n    function _burn(address account, uint256 value) internal {\\n        if (account == address(0)) {\\n            revert ERC20InvalidSender(address(0));\\n        }\\n        _update(account, address(0), value);\\n    }\\n\\n    /**\\n     * @dev Sets `value` as the allowance of `spender` over the `owner` s tokens.\\n     *\\n     * This internal function is equivalent to `approve`, and can be used to\\n     * e.g. set automatic allowances for certain subsystems, etc.\\n     *\\n     * Emits an {Approval} event.\\n     *\\n     * Requirements:\\n     *\\n     * - `owner` cannot be the zero address.\\n     * - `spender` cannot be the zero address.\\n     *\\n     * Overrides to this logic should be done to the variant with an additional `bool emitEvent` argument.\\n     */\\n    function _approve(address owner, address spender, uint256 value) internal {\\n        _approve(owner, spender, value, true);\\n    }\\n\\n    /**\\n     * @dev Variant of {_approve} with an optional flag to enable or disable the {Approval} event.\\n     *\\n     * By default (when calling {_approve}) the flag is set to true. On the other hand, approval changes made by\\n     * `_spendAllowance` during the `transferFrom` operation set the flag to false. This saves gas by not emitting any\\n     * `Approval` event during `transferFrom` operations.\\n     *\\n     * Anyone who wishes to continue emitting `Approval` events on the`transferFrom` operation can force the flag to\\n     * true using the following override:\\n     * ```\\n     * function _approve(address owner, address spender, uint256 value, bool) internal virtual override {\\n     *     super._approve(owner, spender, value, true);\\n     * }\\n     * ```\\n     *\\n     * Requirements are the same as {_approve}.\\n     */\\n    function _approve(address owner, address spender, uint256 value, bool emitEvent) internal virtual {\\n        if (owner == address(0)) {\\n            revert ERC20InvalidApprover(address(0));\\n        }\\n        if (spender == address(0)) {\\n            revert ERC20InvalidSpender(address(0));\\n        }\\n        _allowances[owner][spender] = value;\\n        if (emitEvent) {\\n            emit Approval(owner, spender, value);\\n        }\\n    }\\n\\n    /**\\n     * @dev Updates `owner` s allowance for `spender` based on spent `value`.\\n     *\\n     * Does not update the allowance value in case of infinite allowance.\\n     * Revert if not enough allowance is available.\\n     *\\n     * Does not emit an {Approval} event.\\n     */\\n    function _spendAllowance(address owner, address spender, uint256 value) internal virtual {\\n        uint256 currentAllowance = allowance(owner, spender);\\n        if (currentAllowance != type(uint256).max) {\\n            if (currentAllowance < value) {\\n                revert ERC20InsufficientAllowance(spender, currentAllowance, value);\\n            }\\n            unchecked {\\n                _approve(owner, spender, currentAllowance - value, false);\\n            }\\n        }\\n    }\\n}\\n\",\"keccak256\":\"0xc3e1fa9d1987f8d349dfb4d6fe93bf2ca014b52ba335cfac30bfe71e357e6f80\",\"license\":\"MIT\"},\"@openzeppelin/contracts/token/ERC20/IERC20.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// OpenZeppelin Contracts (last updated v5.0.0) (token/ERC20/IERC20.sol)\\n\\npragma solidity ^0.8.20;\\n\\n/**\\n * @dev Interface of the ERC20 standard as defined in the EIP.\\n */\\ninterface IERC20 {\\n    /**\\n     * @dev Emitted when `value` tokens are moved from one account (`from`) to\\n     * another (`to`).\\n     *\\n     * Note that `value` may be zero.\\n     */\\n    event Transfer(address indexed from, address indexed to, uint256 value);\\n\\n    /**\\n     * @dev Emitted when the allowance of a `spender` for an `owner` is set by\\n     * a call to {approve}. `value` is the new allowance.\\n     */\\n    event Approval(address indexed owner, address indexed spender, uint256 value);\\n\\n    /**\\n     * @dev Returns the value of tokens in existence.\\n     */\\n    function totalSupply() external view returns (uint256);\\n\\n    /**\\n     * @dev Returns the value of tokens owned by `account`.\\n     */\\n    function balanceOf(address account) external view returns (uint256);\\n\\n    /**\\n     * @dev Moves a `value` amount of tokens from the caller's account to `to`.\\n     *\\n     * Returns a boolean value indicating whether the operation succeeded.\\n     *\\n     * Emits a {Transfer} event.\\n     */\\n    function transfer(address to, uint256 value) external returns (bool);\\n\\n    /**\\n     * @dev Returns the remaining number of tokens that `spender` will be\\n     * allowed to spend on behalf of `owner` through {transferFrom}. This is\\n     * zero by default.\\n     *\\n     * This value changes when {approve} or {transferFrom} are called.\\n     */\\n    function allowance(address owner, address spender) external view returns (uint256);\\n\\n    /**\\n     * @dev Sets a `value` amount of tokens as the allowance of `spender` over the\\n     * caller's tokens.\\n     *\\n     * Returns a boolean value indicating whether the operation succeeded.\\n     *\\n     * IMPORTANT: Beware that changing an allowance with this method brings the risk\\n     * that someone may use both the old and the new allowance by unfortunate\\n     * transaction ordering. One possible solution to mitigate this race\\n     * condition is to first reduce the spender's allowance to 0 and set the\\n     * desired value afterwards:\\n     * https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729\\n     *\\n     * Emits an {Approval} event.\\n     */\\n    function approve(address spender, uint256 value) external returns (bool);\\n\\n    /**\\n     * @dev Moves a `value` amount of tokens from `from` to `to` using the\\n     * allowance mechanism. `value` is then deducted from the caller's\\n     * allowance.\\n     *\\n     * Returns a boolean value indicating whether the operation succeeded.\\n     *\\n     * Emits a {Transfer} event.\\n     */\\n    function transferFrom(address from, address to, uint256 value) external returns (bool);\\n}\\n\",\"keccak256\":\"0xc6a8ff0ea489379b61faa647490411b80102578440ab9d84e9a957cc12164e70\",\"license\":\"MIT\"},\"@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// OpenZeppelin Contracts (last updated v5.0.0) (token/ERC20/extensions/IERC20Metadata.sol)\\n\\npragma solidity ^0.8.20;\\n\\nimport {IERC20} from \\\"../IERC20.sol\\\";\\n\\n/**\\n * @dev Interface for the optional metadata functions from the ERC20 standard.\\n */\\ninterface IERC20Metadata is IERC20 {\\n    /**\\n     * @dev Returns the name of the token.\\n     */\\n    function name() external view returns (string memory);\\n\\n    /**\\n     * @dev Returns the symbol of the token.\\n     */\\n    function symbol() external view returns (string memory);\\n\\n    /**\\n     * @dev Returns the decimals places of the token.\\n     */\\n    function decimals() external view returns (uint8);\\n}\\n\",\"keccak256\":\"0xaa761817f6cd7892fcf158b3c776b34551cde36f48ff9703d53898bc45a94ea2\",\"license\":\"MIT\"},\"@openzeppelin/contracts/utils/Context.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// OpenZeppelin Contracts (last updated v5.0.1) (utils/Context.sol)\\n\\npragma solidity ^0.8.20;\\n\\n/**\\n * @dev Provides information about the current execution context, including the\\n * sender of the transaction and its data. While these are generally available\\n * via msg.sender and msg.data, they should not be accessed in such a direct\\n * manner, since when dealing with meta-transactions the account sending and\\n * paying for execution may not be the actual sender (as far as an application\\n * is concerned).\\n *\\n * This contract is only required for intermediate, library-like contracts.\\n */\\nabstract contract Context {\\n    function _msgSender() internal view virtual returns (address) {\\n        return msg.sender;\\n    }\\n\\n    function _msgData() internal view virtual returns (bytes calldata) {\\n        return msg.data;\\n    }\\n\\n    function _contextSuffixLength() internal view virtual returns (uint256) {\\n        return 0;\\n    }\\n}\\n\",\"keccak256\":\"0x493033a8d1b176a037b2cc6a04dad01a5c157722049bbecf632ca876224dd4b2\",\"license\":\"MIT\"},\"@openzeppelin/contracts/utils/ReentrancyGuard.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// OpenZeppelin Contracts (last updated v5.0.0) (utils/ReentrancyGuard.sol)\\n\\npragma solidity ^0.8.20;\\n\\n/**\\n * @dev Contract module that helps prevent reentrant calls to a function.\\n *\\n * Inheriting from `ReentrancyGuard` will make the {nonReentrant} modifier\\n * available, which can be applied to functions to make sure there are no nested\\n * (reentrant) calls to them.\\n *\\n * Note that because there is a single `nonReentrant` guard, functions marked as\\n * `nonReentrant` may not call one another. This can be worked around by making\\n * those functions `private`, and then adding `external` `nonReentrant` entry\\n * points to them.\\n *\\n * TIP: If you would like to learn more about reentrancy and alternative ways\\n * to protect against it, check out our blog post\\n * https://blog.openzeppelin.com/reentrancy-after-istanbul/[Reentrancy After Istanbul].\\n */\\nabstract contract ReentrancyGuard {\\n    // Booleans are more expensive than uint256 or any type that takes up a full\\n    // word because each write operation emits an extra SLOAD to first read the\\n    // slot's contents, replace the bits taken up by the boolean, and then write\\n    // back. This is the compiler's defense against contract upgrades and\\n    // pointer aliasing, and it cannot be disabled.\\n\\n    // The values being non-zero value makes deployment a bit more expensive,\\n    // but in exchange the refund on every call to nonReentrant will be lower in\\n    // amount. Since refunds are capped to a percentage of the total\\n    // transaction's gas, it is best to keep them low in cases like this one, to\\n    // increase the likelihood of the full refund coming into effect.\\n    uint256 private constant NOT_ENTERED = 1;\\n    uint256 private constant ENTERED = 2;\\n\\n    uint256 private _status;\\n\\n    /**\\n     * @dev Unauthorized reentrant call.\\n     */\\n    error ReentrancyGuardReentrantCall();\\n\\n    constructor() {\\n        _status = NOT_ENTERED;\\n    }\\n\\n    /**\\n     * @dev Prevents a contract from calling itself, directly or indirectly.\\n     * Calling a `nonReentrant` function from another `nonReentrant`\\n     * function is not supported. It is possible to prevent this from happening\\n     * by making the `nonReentrant` function external, and making it call a\\n     * `private` function that does the actual work.\\n     */\\n    modifier nonReentrant() {\\n        _nonReentrantBefore();\\n        _;\\n        _nonReentrantAfter();\\n    }\\n\\n    function _nonReentrantBefore() private {\\n        // On the first call to nonReentrant, _status will be NOT_ENTERED\\n        if (_status == ENTERED) {\\n            revert ReentrancyGuardReentrantCall();\\n        }\\n\\n        // Any calls to nonReentrant after this point will fail\\n        _status = ENTERED;\\n    }\\n\\n    function _nonReentrantAfter() private {\\n        // By storing the original value once again, a refund is triggered (see\\n        // https://eips.ethereum.org/EIPS/eip-2200)\\n        _status = NOT_ENTERED;\\n    }\\n\\n    /**\\n     * @dev Returns true if the reentrancy guard is currently set to \\\"entered\\\", which indicates there is a\\n     * `nonReentrant` function in the call stack.\\n     */\\n    function _reentrancyGuardEntered() internal view returns (bool) {\\n        return _status == ENTERED;\\n    }\\n}\\n\",\"keccak256\":\"0xf980daa263b661ab8ddee7d4fd833c7da7e7995e2c359ff1f17e67e4112f2236\",\"license\":\"MIT\"},\"contracts/BasketOracle.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.20;\\n\\nimport \\\"@openzeppelin/contracts/access/Ownable.sol\\\";\\nimport \\\"./BasketRegistry.sol\\\";\\n\\n/**\\n * @title BasketOracle\\n * @notice Oracle for computing basket prices from individual asset prices\\n * @dev This is the CORE INNOVATION of EquiBaskets.\\n *      Unlike single-asset oracles that just return a price, this oracle\\n *      COMPUTES FINANCIAL MEANING by:\\n *      1. Reading basket composition from BasketRegistry\\n *      2. Fetching price for each underlying asset\\n *      3. Computing weighted average basket price\\n * \\n *      For the hackathon, asset prices are hardcoded on-chain in USD format.\\n *      This module is intentionally designed to be replaced later with a\\n *      real oracle integration (e.g., Pyth, Chainlink).\\n * \\n *      All prices are stored and returned in 1e18 format.\\n *      For example, $100 = 100 * 1e18 = 100000000000000000000\\n * \\n *      The MNT/USD price is also stored here for collateral valuation.\\n */\\ncontract BasketOracle is Ownable {\\n    // ============================================================\\n    // ========================== STATE ===========================\\n    // ============================================================\\n    \\n    /// @notice Reference to the BasketRegistry for reading composition\\n    BasketRegistry public immutable basketRegistry;\\n    \\n    /// @notice Mapping from asset identifier to USD price (1e18 format)\\n    mapping(string => uint256) public assetPrices;\\n    \\n    /// @notice List of all registered asset identifiers\\n    string[] public registeredAssets;\\n    \\n    /// @notice Mapping to check if an asset is registered\\n    mapping(string => bool) public isAssetRegistered;\\n    \\n    /// @notice MNT/USD price in 1e18 format\\n    /// @dev Used for calculating collateral value in the vault\\n    uint256 public mntUsdPrice;\\n    \\n    // ============================================================\\n    // ========================= EVENTS ===========================\\n    // ============================================================\\n    \\n    /// @notice Emitted when an asset price is updated\\n    event AssetPriceUpdated(string indexed assetId, uint256 oldPrice, uint256 newPrice);\\n    \\n    /// @notice Emitted when MNT/USD price is updated\\n    event MntPriceUpdated(uint256 oldPrice, uint256 newPrice);\\n    \\n    /// @notice Emitted when a new asset is registered\\n    event AssetRegistered(string assetId, uint256 initialPrice);\\n    \\n    // ============================================================\\n    // ========================= ERRORS ===========================\\n    // ============================================================\\n    \\n    /// @notice Thrown when basket doesn't exist\\n    error BasketDoesNotExist();\\n    \\n    /// @notice Thrown when asset price is not available\\n    error AssetPriceNotAvailable(string assetId);\\n    \\n    /// @notice Thrown when MNT price is not set\\n    error MntPriceNotSet();\\n    \\n    /// @notice Thrown when price is zero\\n    error ZeroPrice();\\n    \\n    /// @notice Thrown when asset is already registered\\n    error AssetAlreadyRegistered(string assetId);\\n\\n    // ============================================================\\n    // ====================== CONSTRUCTOR =========================\\n    // ============================================================\\n    \\n    /**\\n     * @notice Initialize the BasketOracle with a registry reference\\n     * @param _basketRegistry Address of the BasketRegistry contract\\n     */\\n    constructor(address _basketRegistry) Ownable(msg.sender) {\\n        basketRegistry = BasketRegistry(_basketRegistry);\\n        \\n        // Initialize with default prices for common assets (in 1e18 format)\\n        // These represent example assets that might be in baskets\\n        _registerAssetWithPrice(\\\"AAPL\\\", 175 * 1e18);    // Apple Inc. at $175\\n        _registerAssetWithPrice(\\\"NVDA\\\", 490 * 1e18);    // NVIDIA at $490\\n        _registerAssetWithPrice(\\\"GOLD\\\", 2050 * 1e18);   // Gold per oz at $2050\\n        _registerAssetWithPrice(\\\"SILVER\\\", 24 * 1e18);   // Silver per oz at $24\\n        _registerAssetWithPrice(\\\"HITACHI\\\", 92 * 1e18);  // Hitachi at $92\\n        _registerAssetWithPrice(\\\"MSFT\\\", 380 * 1e18);    // Microsoft at $380\\n        _registerAssetWithPrice(\\\"GOOGL\\\", 140 * 1e18);   // Alphabet at $140\\n        _registerAssetWithPrice(\\\"AMZN\\\", 155 * 1e18);    // Amazon at $155\\n        _registerAssetWithPrice(\\\"TSLA\\\", 250 * 1e18);    // Tesla at $250\\n        _registerAssetWithPrice(\\\"BTC\\\", 42000 * 1e18);   // Bitcoin at $42000\\n        \\n        // Initialize MNT price (example: $0.50)\\n        mntUsdPrice = 5 * 1e17; // 0.5 * 1e18\\n    }\\n\\n    // ============================================================\\n    // ================== INTERNAL FUNCTIONS ======================\\n    // ============================================================\\n    \\n    /**\\n     * @notice Internal function to register an asset with initial price\\n     * @param assetId Asset identifier\\n     * @param price Initial price in 1e18 format\\n     */\\n    function _registerAssetWithPrice(string memory assetId, uint256 price) internal {\\n        assetPrices[assetId] = price;\\n        registeredAssets.push(assetId);\\n        isAssetRegistered[assetId] = true;\\n    }\\n\\n    // ============================================================\\n    // =================== ADMIN FUNCTIONS ========================\\n    // ============================================================\\n    \\n    /**\\n     * @notice Register a new asset with initial price\\n     * @param assetId Asset identifier (e.g., \\\"AAPL\\\", \\\"GOLD\\\")\\n     * @param price Initial price in 1e18 format\\n     */\\n    function registerAsset(string calldata assetId, uint256 price) external onlyOwner {\\n        if (isAssetRegistered[assetId]) revert AssetAlreadyRegistered(assetId);\\n        if (price == 0) revert ZeroPrice();\\n        \\n        _registerAssetWithPrice(assetId, price);\\n        \\n        emit AssetRegistered(assetId, price);\\n    }\\n    \\n    /**\\n     * @notice Update the price of an asset\\n     * @param assetId Asset identifier\\n     * @param newPrice New price in 1e18 format\\n     */\\n    function setAssetPrice(string calldata assetId, uint256 newPrice) external onlyOwner {\\n        if (newPrice == 0) revert ZeroPrice();\\n        \\n        uint256 oldPrice = assetPrices[assetId];\\n        assetPrices[assetId] = newPrice;\\n        \\n        // Auto-register if not already registered\\n        if (!isAssetRegistered[assetId]) {\\n            registeredAssets.push(assetId);\\n            isAssetRegistered[assetId] = true;\\n            emit AssetRegistered(assetId, newPrice);\\n        }\\n        \\n        emit AssetPriceUpdated(assetId, oldPrice, newPrice);\\n    }\\n    \\n    /**\\n     * @notice Update MNT/USD price\\n     * @param newPrice New MNT/USD price in 1e18 format\\n     */\\n    function setMntPrice(uint256 newPrice) external onlyOwner {\\n        if (newPrice == 0) revert ZeroPrice();\\n        \\n        uint256 oldPrice = mntUsdPrice;\\n        mntUsdPrice = newPrice;\\n        \\n        emit MntPriceUpdated(oldPrice, newPrice);\\n    }\\n    \\n    /**\\n     * @notice Batch update multiple asset prices\\n     * @param assetIds Array of asset identifiers\\n     * @param prices Array of new prices in 1e18 format\\n     */\\n    function batchSetAssetPrices(\\n        string[] calldata assetIds,\\n        uint256[] calldata prices\\n    ) external onlyOwner {\\n        require(assetIds.length == prices.length, \\\"Array length mismatch\\\");\\n        \\n        for (uint256 i = 0; i < assetIds.length; i++) {\\n            if (prices[i] == 0) revert ZeroPrice();\\n            \\n            uint256 oldPrice = assetPrices[assetIds[i]];\\n            assetPrices[assetIds[i]] = prices[i];\\n            \\n            if (!isAssetRegistered[assetIds[i]]) {\\n                registeredAssets.push(assetIds[i]);\\n                isAssetRegistered[assetIds[i]] = true;\\n                emit AssetRegistered(assetIds[i], prices[i]);\\n            }\\n            \\n            emit AssetPriceUpdated(assetIds[i], oldPrice, prices[i]);\\n        }\\n    }\\n\\n    // ============================================================\\n    // ================= CORE PRICING FUNCTIONS ===================\\n    // ============================================================\\n    \\n    /**\\n     * @notice Get the weighted price of a basket\\n     * @dev This is the CORE function of EquiBaskets oracle.\\n     *      It computes the basket price by:\\n     *      1. Reading composition from BasketRegistry\\n     *      2. Fetching price for each asset\\n     *      3. Computing weighted average: sum(price[i] * weight[i]) / 10000\\n     * @param basketId The basket ID to get price for\\n     * @return price Basket price in 1e18 USD format\\n     */\\n    function getBasketPrice(uint256 basketId) external view returns (uint256 price) {\\n        // Verify basket exists\\n        if (!basketRegistry.basketExists(basketId)) revert BasketDoesNotExist();\\n        \\n        // Get basket composition\\n        (string[] memory assets, uint256[] memory weights) = basketRegistry.getBasketComposition(basketId);\\n        \\n        // Calculate weighted price\\n        // Sum of (asset_price * weight) / 10000\\n        // Using 1e18 precision throughout\\n        uint256 weightedSum = 0;\\n        \\n        for (uint256 i = 0; i < assets.length; i++) {\\n            uint256 assetPrice = assetPrices[assets[i]];\\n            if (assetPrice == 0) revert AssetPriceNotAvailable(assets[i]);\\n            \\n            // Accumulate weighted price\\n            // assetPrice is in 1e18, weight is in basis points (0-10000)\\n            weightedSum += assetPrice * weights[i];\\n        }\\n        \\n        // Divide by 10000 to get final price in 1e18 format\\n        price = weightedSum / 10000;\\n    }\\n    \\n    /**\\n     * @notice Get individual asset price\\n     * @param assetId Asset identifier\\n     * @return price Asset price in 1e18 USD format\\n     */\\n    function getAssetPrice(string calldata assetId) external view returns (uint256 price) {\\n        price = assetPrices[assetId];\\n        if (price == 0) revert AssetPriceNotAvailable(assetId);\\n    }\\n    \\n    /**\\n     * @notice Get MNT to USD value\\n     * @param mntAmount Amount of MNT tokens (in 1e18)\\n     * @return usdValue USD value in 1e18 format\\n     */\\n    function getMntValue(uint256 mntAmount) external view returns (uint256 usdValue) {\\n        if (mntUsdPrice == 0) revert MntPriceNotSet();\\n        // Both mntAmount and mntUsdPrice are in 1e18\\n        // Result needs to be in 1e18, so divide by 1e18\\n        usdValue = (mntAmount * mntUsdPrice) / 1e18;\\n    }\\n    \\n    /**\\n     * @notice Get the MNT amount equivalent to a USD value\\n     * @param usdValue USD value in 1e18 format\\n     * @return mntAmount MNT amount in 1e18 format\\n     */\\n    function getMntFromUsdValue(uint256 usdValue) external view returns (uint256 mntAmount) {\\n        if (mntUsdPrice == 0) revert MntPriceNotSet();\\n        // Inverse of getMntValue\\n        mntAmount = (usdValue * 1e18) / mntUsdPrice;\\n    }\\n\\n    // ============================================================\\n    // ==================== VIEW FUNCTIONS ========================\\n    // ============================================================\\n    \\n    /**\\n     * @notice Get all registered asset identifiers\\n     * @return Array of asset identifier strings\\n     */\\n    function getAllRegisteredAssets() external view returns (string[] memory) {\\n        return registeredAssets;\\n    }\\n    \\n    /**\\n     * @notice Get the number of registered assets\\n     * @return Count of registered assets\\n     */\\n    function getRegisteredAssetCount() external view returns (uint256) {\\n        return registeredAssets.length;\\n    }\\n    \\n    /**\\n     * @notice Check if a basket has all required asset prices\\n     * @param basketId The basket ID to check\\n     * @return valid True if all asset prices are available\\n     * @return missingAsset The first missing asset (if any)\\n     */\\n    function validateBasketPrices(uint256 basketId) external view returns (\\n        bool valid,\\n        string memory missingAsset\\n    ) {\\n        if (!basketRegistry.basketExists(basketId)) revert BasketDoesNotExist();\\n        \\n        (string[] memory assets, ) = basketRegistry.getBasketComposition(basketId);\\n        \\n        for (uint256 i = 0; i < assets.length; i++) {\\n            if (assetPrices[assets[i]] == 0) {\\n                return (false, assets[i]);\\n            }\\n        }\\n        \\n        return (true, \\\"\\\");\\n    }\\n}\\n\",\"keccak256\":\"0xaaef35972511d629d18519e3336e605b6ca9345053a0a404ce83cf94ce81d419\",\"license\":\"MIT\"},\"contracts/BasketRegistry.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.20;\\n\\nimport \\\"@openzeppelin/contracts/access/Ownable.sol\\\";\\n\\n/**\\n * @title BasketRegistry\\n * @notice Registry for basket-based synthetic assets\\n * @dev This contract is the canonical on-chain source of truth for basket composition.\\n *      It stores basket metadata including:\\n *      - Asset composition (list of asset identifiers)\\n *      - Weights (in basis points, must sum to 10000)\\n *      - Creator address (fund creator role)\\n *      - Activation state\\n * \\n *      IMPORTANT: This contract is pure metadata storage.\\n *      No pricing logic should exist here - that belongs in BasketOracle.\\n * \\n *      The basketId is a unique identifier assigned sequentially to each basket.\\n *      Asset identifiers are strings (e.g., \\\"AAPL\\\", \\\"GOLD\\\", \\\"NVDA\\\") that are used\\n *      by the BasketOracle to look up prices.\\n */\\ncontract BasketRegistry is Ownable {\\n    // ============================================================\\n    // ====================== DATA STRUCTURES =====================\\n    // ============================================================\\n    \\n    /**\\n     * @notice Represents a basket of synthetic assets\\n     * @param creator Address of the fund creator who created this basket\\n     * @param assets List of asset identifiers (e.g., [\\\"AAPL\\\", \\\"NVDA\\\", \\\"GOLD\\\"])\\n     * @param weights Weight of each asset in basis points (must sum to 10000)\\n     * @param active Whether this basket is active for minting/trading\\n     * @param name Human-readable name for the basket\\n     * @param symbol Token symbol for the basket token\\n     */\\n    struct Basket {\\n        address creator;\\n        string[] assets;\\n        uint256[] weights;\\n        bool active;\\n        string name;\\n        string symbol;\\n    }\\n\\n    // ============================================================\\n    // ========================== STATE ===========================\\n    // ============================================================\\n    \\n    /// @notice Counter for generating unique basket IDs\\n    uint256 public basketCount;\\n    \\n    /// @notice Mapping from basket ID to basket data\\n    mapping(uint256 => Basket) private baskets;\\n    \\n    /// @notice Mapping from basket creator to list of their basket IDs\\n    mapping(address => uint256[]) public creatorBaskets;\\n    \\n    // ============================================================\\n    // ========================= EVENTS ===========================\\n    // ============================================================\\n    \\n    /// @notice Emitted when a new basket is created\\n    /// @dev Full basket details can be queried via getBasket(basketId)\\n    event BasketCreated(\\n        uint256 indexed basketId,\\n        address indexed creator,\\n        uint256 assetCount\\n    );\\n    \\n    /// @notice Emitted when a basket's active state changes\\n    event BasketActiveStateChanged(uint256 indexed basketId, bool active);\\n    \\n    // ============================================================\\n    // ========================= ERRORS ===========================\\n    // ============================================================\\n    \\n    /// @notice Thrown when assets and weights arrays have different lengths\\n    error ArrayLengthMismatch();\\n    \\n    /// @notice Thrown when assets array is empty\\n    error EmptyAssetsArray();\\n    \\n    /// @notice Thrown when weights don't sum to 10000 basis points\\n    error InvalidWeightsSum();\\n    \\n    /// @notice Thrown when a weight is zero\\n    error ZeroWeight();\\n    \\n    /// @notice Thrown when basket doesn't exist\\n    error BasketDoesNotExist();\\n    \\n    /// @notice Thrown when caller is not the basket creator\\n    error NotBasketCreator();\\n\\n    // ============================================================\\n    // ====================== CONSTRUCTOR =========================\\n    // ============================================================\\n    \\n    constructor() Ownable(msg.sender) {\\n        // BasketRegistry starts with basketCount = 0\\n        // First basket created will have basketId = 1\\n    }\\n\\n    // ============================================================\\n    // =================== EXTERNAL FUNCTIONS =====================\\n    // ============================================================\\n    \\n    /**\\n     * @notice Create a new basket with specified assets and weights\\n     * @dev Only callable by anyone (fund creator role).\\n     *      Weights must sum to 10000 basis points (100%).\\n     *      Each weight must be non-zero.\\n     * @param assets Array of asset identifiers\\n     * @param weights Array of weights in basis points\\n     * @param name Human-readable name for the basket\\n     * @param symbol Token symbol for the basket\\n     * @return basketId The unique ID assigned to the new basket\\n     */\\n    function createBasket(\\n        string[] calldata assets,\\n        uint256[] calldata weights,\\n        string calldata name,\\n        string calldata symbol\\n    ) external returns (uint256 basketId) {\\n        // Validate inputs\\n        uint256 assetLen = assets.length;\\n        if (assetLen == 0) revert EmptyAssetsArray();\\n        if (assetLen != weights.length) revert ArrayLengthMismatch();\\n        \\n        // Validate weights sum to 10000 basis points\\n        uint256 totalWeight = 0;\\n        for (uint256 i = 0; i < assetLen;) {\\n            if (weights[i] == 0) revert ZeroWeight();\\n            totalWeight += weights[i];\\n            unchecked { ++i; }\\n        }\\n        if (totalWeight != 10000) revert InvalidWeightsSum();\\n        \\n        // Generate new basket ID (starts from 1)\\n        basketId = ++basketCount;\\n        \\n        // Create the basket - store directly to avoid extra local vars\\n        Basket storage b = baskets[basketId];\\n        b.creator = msg.sender;\\n        b.active = true;\\n        b.name = name;\\n        b.symbol = symbol;\\n        \\n        // Copy assets and weights to storage\\n        for (uint256 i = 0; i < assetLen;) {\\n            b.assets.push(assets[i]);\\n            b.weights.push(weights[i]);\\n            unchecked { ++i; }\\n        }\\n        \\n        // Track creator's baskets\\n        creatorBaskets[msg.sender].push(basketId);\\n        \\n        emit BasketCreated(basketId, msg.sender, assetLen);\\n    }\\n    \\n    /**\\n     * @notice Deactivate a basket (only creator or owner)\\n     * @param basketId The basket to deactivate\\n     */\\n    function deactivateBasket(uint256 basketId) external {\\n        Basket storage basket = baskets[basketId];\\n        if (basket.creator == address(0)) revert BasketDoesNotExist();\\n        if (msg.sender != basket.creator && msg.sender != owner()) {\\n            revert NotBasketCreator();\\n        }\\n        \\n        basket.active = false;\\n        emit BasketActiveStateChanged(basketId, false);\\n    }\\n    \\n    /**\\n     * @notice Reactivate a basket (only creator or owner)\\n     * @param basketId The basket to reactivate\\n     */\\n    function reactivateBasket(uint256 basketId) external {\\n        Basket storage basket = baskets[basketId];\\n        if (basket.creator == address(0)) revert BasketDoesNotExist();\\n        if (msg.sender != basket.creator && msg.sender != owner()) {\\n            revert NotBasketCreator();\\n        }\\n        \\n        basket.active = true;\\n        emit BasketActiveStateChanged(basketId, true);\\n    }\\n\\n    // ============================================================\\n    // ==================== VIEW FUNCTIONS ========================\\n    // ============================================================\\n    \\n    /**\\n     * @notice Get complete basket data by ID\\n     * @param basketId The basket ID to query\\n     * @return creator The creator address\\n     * @return assets Array of asset identifiers\\n     * @return weights Array of weights in basis points\\n     * @return active Whether the basket is active\\n     * @return name Basket name\\n     * @return symbol Basket symbol\\n     */\\n    function getBasket(uint256 basketId) external view returns (\\n        address creator,\\n        string[] memory assets,\\n        uint256[] memory weights,\\n        bool active,\\n        string memory name,\\n        string memory symbol\\n    ) {\\n        Basket storage basket = baskets[basketId];\\n        if (basket.creator == address(0)) revert BasketDoesNotExist();\\n        \\n        return (\\n            basket.creator,\\n            basket.assets,\\n            basket.weights,\\n            basket.active,\\n            basket.name,\\n            basket.symbol\\n        );\\n    }\\n    \\n    /**\\n     * @notice Check if a basket is active\\n     * @param basketId The basket ID to check\\n     * @return True if active, false otherwise\\n     */\\n    function isBasketActive(uint256 basketId) external view returns (bool) {\\n        Basket storage basket = baskets[basketId];\\n        if (basket.creator == address(0)) revert BasketDoesNotExist();\\n        return basket.active;\\n    }\\n    \\n    /**\\n     * @notice Get basket composition (assets and weights only)\\n     * @param basketId The basket ID to query\\n     * @return assets Array of asset identifiers\\n     * @return weights Array of weights in basis points\\n     */\\n    function getBasketComposition(uint256 basketId) external view returns (\\n        string[] memory assets,\\n        uint256[] memory weights\\n    ) {\\n        Basket storage basket = baskets[basketId];\\n        if (basket.creator == address(0)) revert BasketDoesNotExist();\\n        return (basket.assets, basket.weights);\\n    }\\n    \\n    /**\\n     * @notice Get the number of assets in a basket\\n     * @param basketId The basket ID to query\\n     * @return Number of assets\\n     */\\n    function getBasketAssetCount(uint256 basketId) external view returns (uint256) {\\n        Basket storage basket = baskets[basketId];\\n        if (basket.creator == address(0)) revert BasketDoesNotExist();\\n        return basket.assets.length;\\n    }\\n    \\n    /**\\n     * @notice Get all basket IDs created by a specific address\\n     * @param creator The creator address to query\\n     * @return Array of basket IDs\\n     */\\n    function getBasketsByCreator(address creator) external view returns (uint256[] memory) {\\n        return creatorBaskets[creator];\\n    }\\n    \\n    /**\\n     * @notice Check if a basket exists\\n     * @param basketId The basket ID to check\\n     * @return True if exists, false otherwise\\n     */\\n    function basketExists(uint256 basketId) external view returns (bool) {\\n        return baskets[basketId].creator != address(0);\\n    }\\n}\\n\",\"keccak256\":\"0x90023bcb787d588dada2b19d7509f4b4d58d3d693deb486a48814e7ee5b4f3d0\",\"license\":\"MIT\"},\"contracts/BasketVault.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.20;\\n\\nimport \\\"@openzeppelin/contracts/access/Ownable.sol\\\";\\nimport \\\"@openzeppelin/contracts/utils/ReentrancyGuard.sol\\\";\\nimport \\\"./BasketRegistry.sol\\\";\\nimport \\\"./BasketOracle.sol\\\";\\nimport \\\"./EquiBasketToken.sol\\\";\\n\\n/**\\n * @title BasketVault\\n * @notice Vault for managing basket-scoped collateral positions using NATIVE MNT\\n * @dev This version uses native MNT (msg.value) instead of ERC20 MockMNT\\n *      On Mantle, MNT is the native gas token similar to ETH on Ethereum.\\n *      \\n *      Key features:\\n *      - State is (user \\u2192 basketId \\u2192 position) scoped\\n *      - A user can have multiple baskets with different risk profiles\\n *      - Each (user, basketId) pair is an independent position\\n *      - Uses NATIVE MNT (msg.value) as collateral\\n * \\n *      COLLATERAL FLOW:\\n *      1. User deposits native MNT collateral via msg.value\\n *      2. User can mint basket tokens if they have sufficient collateral\\n *      3. When minting, debt is created and tracked per (user, basketId)\\n *      4. When burning, debt is repaid and collateral is freed\\n */\\ncontract BasketVault is Ownable, ReentrancyGuard {\\n    // ============================================================\\n    // ======================= CONSTANTS ==========================\\n    // ============================================================\\n    \\n    /// @notice Required collateral ratio for minting (500%)\\n    uint256 public constant COLLATERAL_RATIO = 500;\\n    \\n    /// @notice Liquidation threshold (150%)\\n    uint256 public constant LIQUIDATION_THRESHOLD = 150;\\n    \\n    /// @notice Decimal precision for calculations (1e18)\\n    uint256 public constant PRECISION = 1e18;\\n    \\n    /// @notice Liquidation penalty in basis points (10% = 1000 bp)\\n    uint256 public constant LIQUIDATION_PENALTY = 1000;\\n\\n    // ============================================================\\n    // ========================== STATE ===========================\\n    // ============================================================\\n    \\n    /// @notice Reference to the basket oracle for pricing\\n    BasketOracle public basketOracle;\\n    \\n    /// @notice Reference to the basket registry\\n    BasketRegistry public immutable basketRegistry;\\n    \\n    /// @notice Mapping from basketId to its token contract\\n    mapping(uint256 => EquiBasketToken) public basketTokens;\\n    \\n    /// @notice User collateral per basket: user => basketId => collateral amount (in MNT, 18 decimals)\\n    mapping(address => mapping(uint256 => uint256)) public userCollateral;\\n    \\n    /// @notice User debt per basket: user => basketId => debt amount (in basket tokens, 18 decimals)\\n    mapping(address => mapping(uint256 => uint256)) public userDebt;\\n    \\n    /// @notice Authorized liquidator address (Vincent bot)\\n    address public liquidator;\\n    \\n    /// @notice Authorized factory that can register basket tokens\\n    address public authorizedFactory;\\n    \\n    // ============================================================\\n    // ========================= EVENTS ===========================\\n    // ============================================================\\n    \\n    event CollateralDeposited(\\n        address indexed user,\\n        uint256 indexed basketId,\\n        uint256 amount,\\n        uint256 newTotalCollateral\\n    );\\n    \\n    event CollateralWithdrawn(\\n        address indexed user,\\n        uint256 indexed basketId,\\n        uint256 amount,\\n        uint256 newTotalCollateral\\n    );\\n    \\n    event BasketMinted(\\n        address indexed user,\\n        uint256 indexed basketId,\\n        uint256 amount,\\n        uint256 newTotalDebt\\n    );\\n    \\n    event BasketBurned(\\n        address indexed user,\\n        uint256 indexed basketId,\\n        uint256 amount,\\n        uint256 newTotalDebt\\n    );\\n    \\n    event Liquidated(\\n        address indexed user,\\n        uint256 indexed basketId,\\n        address indexed liquidator,\\n        uint256 debtRepaid,\\n        uint256 collateralSeized\\n    );\\n    \\n    event BasketTokenRegistered(uint256 indexed basketId, address tokenAddress);\\n    event OracleUpdated(address oldOracle, address newOracle);\\n    event LiquidatorUpdated(address oldLiquidator, address newLiquidator);\\n    event FactoryUpdated(address factory);\\n    \\n    // ============================================================\\n    // ========================= ERRORS ===========================\\n    // ============================================================\\n    \\n    error InvalidAmount();\\n    error BasketDoesNotExist();\\n    error BasketNotActive();\\n    error InsufficientCollateral();\\n    error InsufficientDebt();\\n    error PositionNotLiquidatable();\\n    error NoDebtToLiquidate();\\n    error BasketTokenNotRegistered();\\n    error BasketTokenAlreadyRegistered();\\n    error ZeroAddress();\\n    error NotAuthorizedLiquidator();\\n    error CollateralRatioTooLow();\\n    error TransferFailed();\\n\\n    // ============================================================\\n    // ====================== CONSTRUCTOR =========================\\n    // ============================================================\\n    \\n    /**\\n     * @notice Initialize the vault with dependencies\\n     * @param _basketRegistry Address of the BasketRegistry\\n     * @param _basketOracle Address of the BasketOracle\\n     */\\n    constructor(\\n        address _basketRegistry,\\n        address _basketOracle\\n    ) Ownable(msg.sender) {\\n        if (_basketRegistry == address(0)) revert ZeroAddress();\\n        if (_basketOracle == address(0)) revert ZeroAddress();\\n        \\n        basketRegistry = BasketRegistry(_basketRegistry);\\n        basketOracle = BasketOracle(_basketOracle);\\n    }\\n\\n    // ============================================================\\n    // =================== ADMIN FUNCTIONS ========================\\n    // ============================================================\\n    \\n    /**\\n     * @notice Register a basket token for a basket\\n     */\\n    function registerBasketToken(uint256 basketId, address tokenAddress) external {\\n        // Allow owner OR authorized factory to register tokens\\n        if (msg.sender != owner() && msg.sender != authorizedFactory) {\\n            revert OwnableUnauthorizedAccount(msg.sender);\\n        }\\n        if (!basketRegistry.basketExists(basketId)) revert BasketDoesNotExist();\\n        if (address(basketTokens[basketId]) != address(0)) revert BasketTokenAlreadyRegistered();\\n        if (tokenAddress == address(0)) revert ZeroAddress();\\n        \\n        basketTokens[basketId] = EquiBasketToken(tokenAddress);\\n        emit BasketTokenRegistered(basketId, tokenAddress);\\n    }\\n    \\n    /**\\n     * @notice Set the authorized factory address\\n     * @param _factory Address of the BasketFactory contract\\n     */\\n    function setAuthorizedFactory(address _factory) external onlyOwner {\\n        authorizedFactory = _factory;\\n        emit FactoryUpdated(_factory);\\n    }\\n    \\n    function setOracle(address _newOracle) external onlyOwner {\\n        if (_newOracle == address(0)) revert ZeroAddress();\\n        address oldOracle = address(basketOracle);\\n        basketOracle = BasketOracle(_newOracle);\\n        emit OracleUpdated(oldOracle, _newOracle);\\n    }\\n    \\n    function setLiquidator(address _liquidator) external onlyOwner {\\n        address oldLiquidator = liquidator;\\n        liquidator = _liquidator;\\n        emit LiquidatorUpdated(oldLiquidator, _liquidator);\\n    }\\n\\n    // ============================================================\\n    // ================= COLLATERAL FUNCTIONS =====================\\n    // ============================================================\\n    \\n    /**\\n     * @notice Deposit native MNT collateral for a specific basket\\n     * @dev Send MNT via msg.value\\n     * @param basketId The basket to deposit collateral for\\n     */\\n    function depositCollateral(uint256 basketId) external payable nonReentrant {\\n        if (msg.value == 0) revert InvalidAmount();\\n        if (!basketRegistry.basketExists(basketId)) revert BasketDoesNotExist();\\n        \\n        // Update user's collateral balance for this basket\\n        userCollateral[msg.sender][basketId] += msg.value;\\n        \\n        emit CollateralDeposited(\\n            msg.sender,\\n            basketId,\\n            msg.value,\\n            userCollateral[msg.sender][basketId]\\n        );\\n    }\\n    \\n    /**\\n     * @notice Withdraw native MNT collateral from a specific basket\\n     * @dev Can only withdraw excess collateral that maintains required ratio\\n     */\\n    function withdrawCollateral(uint256 basketId, uint256 amount) external nonReentrant {\\n        if (amount == 0) revert InvalidAmount();\\n        if (amount > userCollateral[msg.sender][basketId]) revert InsufficientCollateral();\\n        \\n        uint256 newCollateral = userCollateral[msg.sender][basketId] - amount;\\n        \\n        // Check if user has debt - if so, ensure collateral ratio stays above threshold\\n        uint256 debt = userDebt[msg.sender][basketId];\\n        if (debt > 0) {\\n            uint256 newCollateralValue = basketOracle.getMntValue(newCollateral);\\n            uint256 debtValue = _getDebtValue(basketId, debt);\\n            \\n            uint256 requiredCollateralValue = (debtValue * COLLATERAL_RATIO) / 100;\\n            if (newCollateralValue < requiredCollateralValue) revert InsufficientCollateral();\\n        }\\n        \\n        // Update collateral\\n        userCollateral[msg.sender][basketId] = newCollateral;\\n        \\n        // Transfer native MNT to user\\n        (bool success, ) = payable(msg.sender).call{value: amount}(\\\"\\\");\\n        if (!success) revert TransferFailed();\\n        \\n        emit CollateralWithdrawn(msg.sender, basketId, amount, newCollateral);\\n    }\\n\\n    // ============================================================\\n    // =================== MINTING FUNCTIONS ======================\\n    // ============================================================\\n    \\n    /**\\n     * @notice Mint basket tokens by taking on debt\\n     * @dev Requires sufficient collateral to maintain COLLATERAL_RATIO\\n     */\\n    function mintBasket(uint256 basketId, uint256 amount) external nonReentrant {\\n        if (amount == 0) revert InvalidAmount();\\n        if (!basketRegistry.basketExists(basketId)) revert BasketDoesNotExist();\\n        if (!basketRegistry.isBasketActive(basketId)) revert BasketNotActive();\\n        if (address(basketTokens[basketId]) == address(0)) revert BasketTokenNotRegistered();\\n        \\n        uint256 newDebt = userDebt[msg.sender][basketId] + amount;\\n        uint256 newDebtValue = _getDebtValue(basketId, newDebt);\\n        uint256 requiredCollateralValue = (newDebtValue * COLLATERAL_RATIO) / 100;\\n        \\n        uint256 collateralValue = basketOracle.getMntValue(userCollateral[msg.sender][basketId]);\\n        \\n        if (collateralValue < requiredCollateralValue) revert InsufficientCollateral();\\n        \\n        userDebt[msg.sender][basketId] = newDebt;\\n        basketTokens[basketId].mint(msg.sender, amount);\\n        \\n        emit BasketMinted(msg.sender, basketId, amount, newDebt);\\n    }\\n    \\n    /**\\n     * @notice Burn basket tokens to repay debt and free collateral\\n     */\\n    function burnBasket(uint256 basketId, uint256 amount) external nonReentrant {\\n        if (amount == 0) revert InvalidAmount();\\n        if (amount > userDebt[msg.sender][basketId]) revert InsufficientDebt();\\n        if (address(basketTokens[basketId]) == address(0)) revert BasketTokenNotRegistered();\\n        \\n        uint256 currentDebt = userDebt[msg.sender][basketId];\\n        uint256 currentCollateral = userCollateral[msg.sender][basketId];\\n        \\n        uint256 collateralToRelease = (amount * currentCollateral) / currentDebt;\\n        \\n        userDebt[msg.sender][basketId] -= amount;\\n        \\n        if (userDebt[msg.sender][basketId] == 0) {\\n            collateralToRelease = currentCollateral;\\n            userCollateral[msg.sender][basketId] = 0;\\n        } else {\\n            userCollateral[msg.sender][basketId] -= collateralToRelease;\\n        }\\n        \\n        basketTokens[basketId].burn(msg.sender, amount);\\n        \\n        // Transfer native MNT\\n        (bool success, ) = payable(msg.sender).call{value: collateralToRelease}(\\\"\\\");\\n        if (!success) revert TransferFailed();\\n        \\n        emit BasketBurned(msg.sender, basketId, amount, userDebt[msg.sender][basketId]);\\n    }\\n\\n    // ============================================================\\n    // ================= LIQUIDATION FUNCTIONS ====================\\n    // ============================================================\\n    \\n    function isLiquidatable(address user, uint256 basketId) public view returns (bool) {\\n        uint256 debt = userDebt[user][basketId];\\n        if (debt == 0) return false;\\n        \\n        uint256 ratio = getCollateralRatio(user, basketId);\\n        return ratio < (LIQUIDATION_THRESHOLD * PRECISION / 100);\\n    }\\n    \\n    function liquidate(address user, uint256 basketId) external payable nonReentrant {\\n        if (!isLiquidatable(user, basketId)) revert PositionNotLiquidatable();\\n        \\n        uint256 debt = userDebt[user][basketId];\\n        if (debt == 0) revert NoDebtToLiquidate();\\n        if (address(basketTokens[basketId]) == address(0)) revert BasketTokenNotRegistered();\\n        \\n        uint256 debtValue = _getDebtValue(basketId, debt);\\n        uint256 collateralToSeize = userCollateral[user][basketId];\\n        \\n        // Convert debt value to MNT that liquidator needs to pay\\n        uint256 mntToPayForDebt = basketOracle.getMntFromUsdValue(debtValue);\\n        \\n        // Require liquidator sends enough MNT\\n        if (msg.value < mntToPayForDebt) revert InvalidAmount();\\n        \\n        // Clear user's position\\n        userCollateral[user][basketId] = 0;\\n        userDebt[user][basketId] = 0;\\n        \\n        // Transfer seized collateral to liquidator\\n        (bool success, ) = payable(msg.sender).call{value: collateralToSeize}(\\\"\\\");\\n        if (!success) revert TransferFailed();\\n        \\n        // Refund excess MNT\\n        if (msg.value > mntToPayForDebt) {\\n            (success, ) = payable(msg.sender).call{value: msg.value - mntToPayForDebt}(\\\"\\\");\\n            if (!success) revert TransferFailed();\\n        }\\n        \\n        emit Liquidated(user, basketId, msg.sender, debt, collateralToSeize);\\n    }\\n\\n    // ============================================================\\n    // ===================== VIEW FUNCTIONS =======================\\n    // ============================================================\\n    \\n    function getCollateralRatio(address user, uint256 basketId) public view returns (uint256) {\\n        uint256 debt = userDebt[user][basketId];\\n        if (debt == 0) return type(uint256).max;\\n        \\n        uint256 collateralValue = basketOracle.getMntValue(userCollateral[user][basketId]);\\n        uint256 debtValue = _getDebtValue(basketId, debt);\\n        \\n        if (debtValue == 0) return type(uint256).max;\\n        \\n        return (collateralValue * PRECISION) / debtValue;\\n    }\\n    \\n    function getMaxMintable(address user, uint256 basketId) external view returns (uint256) {\\n        uint256 collateralValue = basketOracle.getMntValue(userCollateral[user][basketId]);\\n        uint256 currentDebtValue = _getDebtValue(basketId, userDebt[user][basketId]);\\n        \\n        uint256 maxDebtValue = (collateralValue * 100) / COLLATERAL_RATIO;\\n        \\n        if (maxDebtValue <= currentDebtValue) return 0;\\n        \\n        uint256 availableDebtValue = maxDebtValue - currentDebtValue;\\n        \\n        uint256 basketPrice = basketOracle.getBasketPrice(basketId);\\n        if (basketPrice == 0) return 0;\\n        \\n        return (availableDebtValue * PRECISION) / basketPrice;\\n    }\\n    \\n    struct UserPositionView {\\n        uint256 collateral;\\n        uint256 debt;\\n        uint256 collateralRatio;\\n        bool liquidatable;\\n    }\\n    \\n    function getUserPosition(address user, uint256 basketId) external view returns (UserPositionView memory) {\\n        return UserPositionView({\\n            collateral: userCollateral[user][basketId],\\n            debt: userDebt[user][basketId],\\n            collateralRatio: getCollateralRatio(user, basketId),\\n            liquidatable: isLiquidatable(user, basketId)\\n        });\\n    }\\n    \\n    // ============================================================\\n    // ================= INTERNAL FUNCTIONS =======================\\n    // ============================================================\\n    \\n    function _getDebtValue(uint256 basketId, uint256 debtAmount) internal view returns (uint256) {\\n        if (debtAmount == 0) return 0;\\n        uint256 basketPrice = basketOracle.getBasketPrice(basketId);\\n        return (debtAmount * basketPrice) / PRECISION;\\n    }\\n    \\n    // Allow receiving native MNT\\n    receive() external payable {}\\n}\\n\",\"keccak256\":\"0x32d0beef464ff4a5051da77ba664c8a79f3cf660f1be0b14087148f6159882b3\",\"license\":\"MIT\"},\"contracts/EquiBasketToken.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.20;\\n\\nimport \\\"@openzeppelin/contracts/token/ERC20/ERC20.sol\\\";\\nimport \\\"@openzeppelin/contracts/access/Ownable.sol\\\";\\n\\n/**\\n * @title EquiBasketToken\\n * @notice ERC20 token representing ownership of a basket-based synthetic asset\\n * @dev Each basket has its own EquiBasketToken deployed when the basket is created.\\n *      Unlike single-asset tokens, this token:\\n *      - Stores the basketId it represents\\n *      - Has name and symbol derived from basket metadata\\n *      - Is only mintable/burnable by the authorized vault\\n * \\n *      The token is a 1:1 representation of debt owed for a basket.\\n *      When a user mints basket tokens, they take on a debt position.\\n *      When they burn, they repay that debt.\\n */\\ncontract EquiBasketToken is ERC20, Ownable {\\n    // ============================================================\\n    // ========================== STATE ===========================\\n    // ============================================================\\n    \\n    /// @notice The basket ID this token represents\\n    uint256 public immutable basketId;\\n    \\n    /// @notice Address of the vault authorized to mint/burn\\n    address public vault;\\n    \\n    // ============================================================\\n    // ========================= EVENTS ===========================\\n    // ============================================================\\n    \\n    /// @notice Emitted when the vault address is updated\\n    event VaultUpdated(address indexed oldVault, address indexed newVault);\\n    \\n    // ============================================================\\n    // ========================= ERRORS ===========================\\n    // ============================================================\\n    \\n    /// @notice Thrown when caller is not the vault\\n    error OnlyVault();\\n    \\n    /// @notice Thrown when vault address is zero\\n    error ZeroVaultAddress();\\n    \\n    // ============================================================\\n    // ======================== MODIFIERS =========================\\n    // ============================================================\\n    \\n    /**\\n     * @notice Ensures caller is the authorized vault\\n     */\\n    modifier onlyVault() {\\n        if (msg.sender != vault) revert OnlyVault();\\n        _;\\n    }\\n\\n    // ============================================================\\n    // ====================== CONSTRUCTOR =========================\\n    // ============================================================\\n    \\n    /**\\n     * @notice Deploy a new basket token\\n     * @param _basketId The basket ID this token represents\\n     * @param _name Token name (e.g., \\\"EquiBasket Tech Giants\\\")\\n     * @param _symbol Token symbol (e.g., \\\"eTECH\\\")\\n     * @param _owner The owner of this token contract (usually the deployer/factory)\\n     */\\n    constructor(\\n        uint256 _basketId,\\n        string memory _name,\\n        string memory _symbol,\\n        address _owner\\n    ) ERC20(_name, _symbol) Ownable(_owner) {\\n        basketId = _basketId;\\n    }\\n\\n    // ============================================================\\n    // =================== ADMIN FUNCTIONS ========================\\n    // ============================================================\\n    \\n    /**\\n     * @notice Set the vault address that can mint/burn tokens\\n     * @dev Only callable by owner. This links the token to its vault.\\n     * @param _vault Address of the BasketVault contract\\n     */\\n    function setVault(address _vault) external onlyOwner {\\n        if (_vault == address(0)) revert ZeroVaultAddress();\\n        \\n        address oldVault = vault;\\n        vault = _vault;\\n        \\n        emit VaultUpdated(oldVault, _vault);\\n    }\\n\\n    // ============================================================\\n    // ================== VAULT-ONLY FUNCTIONS ====================\\n    // ============================================================\\n    \\n    /**\\n     * @notice Mint tokens to user when they take a debt position\\n     * @dev Only callable by the vault during minting operations\\n     * @param user The user receiving the tokens\\n     * @param amount Amount of tokens to mint (in 18 decimals)\\n     */\\n    function mint(address user, uint256 amount) external onlyVault {\\n        _mint(user, amount);\\n    }\\n    \\n    /**\\n     * @notice Burn tokens from user when they repay debt\\n     * @dev Only callable by the vault during burning operations\\n     * @param user The user whose tokens are burned\\n     * @param amount Amount of tokens to burn (in 18 decimals)\\n     */\\n    function burn(address user, uint256 amount) external onlyVault {\\n        _burn(user, amount);\\n    }\\n}\\n\",\"keccak256\":\"0x26daa97237edbe3ca91f4d7ab45586f8715d6b2cf0db3e839da68b746d8286eb\",\"license\":\"MIT\"}},\"version\":1}",
+  "bytecode": "0x60a06040523480156200001157600080fd5b5060405162001dfb38038062001dfb833981016040819052620000349162000151565b33806200005b57604051631e4fbdf760e01b81526000600482015260240160405180910390fd5b6200006681620000e4565b50600180556001600160a01b038216620000935760405163d92e233d60e01b815260040160405180910390fd5b6001600160a01b038116620000bb5760405163d92e233d60e01b815260040160405180910390fd5b6001600160a01b03918216608052600280546001600160a01b0319169190921617905562000189565b600080546001600160a01b038381166001600160a01b0319831681178455604051919092169283917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e09190a35050565b80516001600160a01b03811681146200014c57600080fd5b919050565b600080604083850312156200016557600080fd5b620001708362000134565b9150620001806020840162000134565b90509250929050565b608051611c3a620001c16000396000818161048b01528181610637015281816106dd015281816111a501526115fe0152611c3a6000f3fe6080604052600436106101a05760003560e01c80637adbf973116100ec578063bcbaf4871161008a578063d316f0d711610064578063d316f0d714610518578063d9e69a0514610538578063f2fde38b1461054e578063fec893861461056e57600080fd5b8063bcbaf487146104ad578063cc77a477146104c0578063d1b76f12146104f857600080fd5b80639b8621d5116100c65780639b8621d514610434578063aaf5eb681461044a578063bad4a01f14610466578063baf754891461047957600080fd5b80637adbf973146103e15780638da5cb5b1461040157806390a8ae9b1461041f57600080fd5b80632625dbae1161015957806344a7e5c81161013357806344a7e5c81461033e57806362ece16414610374578063715018a6146103ac578063767a7b05146103c157600080fd5b80632625dbae146102ce5780633fdfb2aa146102ee5780634046ebae1461031e57600080fd5b806301c76f81146101ac5780630852f9f3146101ce57806315e6bc991461020b57806316187ccc1461022b5780631c88ef1e1461025957806325d54cc7146102ae57600080fd5b366101a757005b600080fd5b3480156101b857600080fd5b506101cc6101c7366004611aa1565b61058e565b005b3480156101da57600080fd5b506007546101ee906001600160a01b031681565b6040516001600160a01b0390911681526020015b60405180910390f35b34801561021757600080fd5b506101cc610226366004611ac3565b6105f8565b34801561023757600080fd5b5061024b610246366004611ae5565b610974565b604051908152602001610202565b34801561026557600080fd5b50610279610274366004611ae5565b610a82565b604051610202919081518152602080830151908201526040808301519082015260609182015115159181019190915260800190565b3480156102ba57600080fd5b506101cc6102c9366004611ac3565b610b1b565b3480156102da57600080fd5b506101cc6102e9366004611aa1565b610dc9565b3480156102fa57600080fd5b5061030e610309366004611ae5565b610e25565b6040519015158152602001610202565b34801561032a57600080fd5b506006546101ee906001600160a01b031681565b34801561034a57600080fd5b506101ee610359366004611b0f565b6003602052600090815260409020546001600160a01b031681565b34801561038057600080fd5b5061024b61038f366004611ae5565b600560209081526000928352604080842090915290825290205481565b3480156103b857600080fd5b506101cc610e90565b3480156103cd57600080fd5b506101cc6103dc366004611ac3565b610ea4565b3480156103ed57600080fd5b506101cc6103fc366004611aa1565b6110dd565b34801561040d57600080fd5b506000546001600160a01b03166101ee565b34801561042b57600080fd5b5061024b609681565b34801561044057600080fd5b5061024b6103e881565b34801561045657600080fd5b5061024b670de0b6b3a764000081565b6101cc610474366004611b0f565b611166565b34801561048557600080fd5b506101ee7f000000000000000000000000000000000000000000000000000000000000000081565b6101cc6104bb366004611ae5565b6112c3565b3480156104cc57600080fd5b5061024b6104db366004611ae5565b600460209081526000928352604080842090915290825290205481565b34801561050457600080fd5b506101cc610513366004611b28565b61159d565b34801561052457600080fd5b5061024b610533366004611ae5565b61174f565b34801561054457600080fd5b5061024b6101f481565b34801561055a57600080fd5b506101cc610569366004611aa1565b6118fc565b34801561057a57600080fd5b506002546101ee906001600160a01b031681565b610596611937565b600680546001600160a01b038381166001600160a01b031983168117909355604080519190921680825260208201939093527fbeefc50872111fb9c2028f8772e06e99ec622d34506eec7ac0e85afd9de7889d91015b60405180910390a15050565b610600611964565b806000036106215760405163162908e360e11b815260040160405180910390fd5b604051632fed9b2d60e01b8152600481018390527f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031690632fed9b2d90602401602060405180830381865afa158015610686573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906106aa9190611b54565b6106c75760405163351dc42760e01b815260040160405180910390fd5b6040516379f32da160e01b8152600481018390527f00000000000000000000000000000000000000000000000000000000000000006001600160a01b0316906379f32da190602401602060405180830381865afa15801561072c573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906107509190611b54565b61076d5760405163466c160760e01b815260040160405180910390fd5b6000828152600360205260409020546001600160a01b03166107a2576040516317bd2ecb60e01b815260040160405180910390fd5b3360009081526005602090815260408083208584529091528120546107c8908390611b8c565b905060006107d6848361198e565b9050600060646107e86101f484611b9f565b6107f29190611bb6565b6002543360009081526004602081815260408084208b855290915280832054905163136e035160e01b815291820152929350916001600160a01b039091169063136e035190602401602060405180830381865afa158015610857573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061087b9190611bd8565b90508181101561089e57604051633a23d82560e01b815260040160405180910390fd5b3360008181526005602090815260408083208a845282528083208890556003909152908190205490516340c10f1960e01b81526004810192909252602482018790526001600160a01b0316906340c10f1990604401600060405180830381600087803b15801561090d57600080fd5b505af1158015610921573d6000803e3d6000fd5b505060408051888152602081018890528993503392507ff0ddb93dfd965f3155523eb35b018b546a5b8bd3ce2faad59deb7ee051732b8c91015b60405180910390a35050505061097060018055565b5050565b6001600160a01b03821660009081526005602090815260408083208484529091528120548082036109aa57600019915050610a7c565b6002546001600160a01b03858116600090815260046020818152604080842089855290915280832054905163136e035160e01b8152918201529092919091169063136e035190602401602060405180830381865afa158015610a10573d6000803e3d6000fd5b505050506040513d601f19601f82011682018060405250810190610a349190611bd8565b90506000610a42858461198e565b905080600003610a59576000199350505050610a7c565b80610a6c670de0b6b3a764000084611b9f565b610a769190611bb6565b93505050505b92915050565b610aaf60405180608001604052806000815260200160008152602001600081526020016000151581525090565b604080516080810182526001600160a01b03851660008181526004602090815284822087835281528482205484529181526005825283812086825282528390205490820152908101610b018585610974565b8152602001610b108585610e25565b151590529392505050565b610b23611964565b80600003610b445760405163162908e360e11b815260040160405180910390fd5b336000908152600560209081526040808320858452909152902054811115610b7f5760405163ac4314a960e01b815260040160405180910390fd5b6000828152600360205260409020546001600160a01b0316610bb4576040516317bd2ecb60e01b815260040160405180910390fd5b336000818152600560209081526040808320868452825280832054938352600482528083208684529091528120549082610bee8386611b9f565b610bf89190611bb6565b336000908152600560209081526040808320898452909152812080549293508692909190610c27908490611bf1565b90915550503360009081526005602090815260408083208884529091528120549003610c6f575033600090815260046020908152604080832087845290915281205580610c9f565b33600090815260046020908152604080832088845290915281208054839290610c99908490611bf1565b90915550505b60008581526003602052604090819020549051632770a7eb60e21b8152336004820152602481018690526001600160a01b0390911690639dc29fac90604401600060405180830381600087803b158015610cf857600080fd5b505af1158015610d0c573d6000803e3d6000fd5b50506040516000925033915083908381818185875af1925050503d8060008114610d52576040519150601f19603f3d011682016040523d82523d6000602084013e610d57565b606091505b5050905080610d79576040516312171d8360e31b815260040160405180910390fd5b3360008181526005602090815260408083208a8452825291829020548251898152918201528892917f22e81817e2b796412a3518daf7198f70c44adaac3c97992e199fda115bb834e7910161095b565b610dd1611937565b600780546001600160a01b0319166001600160a01b0383169081179091556040519081527f24cd1310c8883cbeaf5b805ab13586ce018b79c022827158ff3e8df14d3449369060200160405180910390a150565b6001600160a01b0382166000908152600560209081526040808320848452909152812054808203610e5a576000915050610a7c565b6000610e668585610974565b90506064610e7d670de0b6b3a76400006096611b9f565b610e879190611bb6565b11949350505050565b610e98611937565b610ea26000611a35565b565b610eac611964565b80600003610ecd5760405163162908e360e11b815260040160405180910390fd5b336000908152600460209081526040808320858452909152902054811115610f0857604051633a23d82560e01b815260040160405180910390fd5b336000908152600460209081526040808320858452909152812054610f2e908390611bf1565b33600090815260056020908152604080832087845290915290205490915080156110115760025460405163136e035160e01b8152600481018490526000916001600160a01b03169063136e035190602401602060405180830381865afa158015610f9c573d6000803e3d6000fd5b505050506040513d601f19601f82011682018060405250810190610fc09190611bd8565b90506000610fce868461198e565b905060006064610fe06101f484611b9f565b610fea9190611bb6565b90508083101561100d57604051633a23d82560e01b815260040160405180910390fd5b5050505b3360008181526004602090815260408083208884529091528082208590555190919085908381818185875af1925050503d806000811461106d576040519150601f19603f3d011682016040523d82523d6000602084013e611072565b606091505b5050905080611094576040516312171d8360e31b815260040160405180910390fd5b6040805185815260208101859052869133917ffae26280bca25d80f1501a9e363c73d3845e651c9aaae54f1fc09a9dcd5f3303910160405180910390a350505061097060018055565b6110e5611937565b6001600160a01b03811661110c5760405163d92e233d60e01b815260040160405180910390fd5b600280546001600160a01b038381166001600160a01b031983168117909355604080519190921680825260208201939093527f078c3b417dadf69374a59793b829c52001247130433427049317bde56607b1b791016105ec565b61116e611964565b3460000361118f5760405163162908e360e11b815260040160405180910390fd5b604051632fed9b2d60e01b8152600481018290527f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031690632fed9b2d90602401602060405180830381865afa1580156111f4573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906112189190611b54565b6112355760405163351dc42760e01b815260040160405180910390fd5b3360009081526004602090815260408083208484529091528120805434929061125f908490611b8c565b9091555050336000818152600460209081526040808320858452825291829020548251348152918201528392917f0b1992dffc262be88559dcaf96464e9d661d8bfca7e82f2bb73e31932a82187c910160405180910390a36112c060018055565b50565b6112cb611964565b6112d58282610e25565b6112f257604051636415f95960e01b815260040160405180910390fd5b6001600160a01b03821660009081526005602090815260408083208484529091528120549081900361133757604051634fc2e0e160e01b815260040160405180910390fd5b6000828152600360205260409020546001600160a01b031661136c576040516317bd2ecb60e01b815260040160405180910390fd5b6000611378838361198e565b6001600160a01b03808616600090815260046020818152604080842089855290915280832054600254915163d4edc40360e01b8152959650949293169163d4edc403916113cb9187910190815260200190565b602060405180830381865afa1580156113e8573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061140c9190611bd8565b90508034101561142f5760405163162908e360e11b815260040160405180910390fd5b6001600160a01b038616600081815260046020908152604080832089845282528083208390559282526005815282822088835290528181208190559051339084908381818185875af1925050503d80600081146114a8576040519150601f19603f3d011682016040523d82523d6000602084013e6114ad565b606091505b50509050806114cf576040516312171d8360e31b815260040160405180910390fd5b8134111561154757336114e28334611bf1565b604051600081818185875af1925050503d806000811461151e576040519150601f19603f3d011682016040523d82523d6000602084013e611523565b606091505b50508091505080611547576040516312171d8360e31b815260040160405180910390fd5b6040805186815260208101859052339188916001600160a01b038b16917fe086979fec7c5bf71045df524eb3ac4a59b9ed8aec05d1969c844aee1db6fc62910160405180910390a4505050505061097060018055565b6000546001600160a01b031633148015906115c357506007546001600160a01b03163314155b156115e85760405163118cdaa760e01b81523360048201526024015b60405180910390fd5b604051632fed9b2d60e01b8152600481018390527f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031690632fed9b2d90602401602060405180830381865afa15801561164d573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906116719190611b54565b61168e5760405163351dc42760e01b815260040160405180910390fd5b6000828152600360205260409020546001600160a01b0316156116c45760405163b2de92eb60e01b815260040160405180910390fd5b6001600160a01b0381166116eb5760405163d92e233d60e01b815260040160405180910390fd5b60008281526003602090815260409182902080546001600160a01b0319166001600160a01b038516908117909155915191825283917f0ea005f51e3badce782451426a88ddc59bb53fa1c42fa6dec1f753465111a697910160405180910390a25050565b6002546001600160a01b03838116600090815260046020818152604080842087855290915280832054905163136e035160e01b81529182015290928392169063136e035190602401602060405180830381865afa1580156117b4573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906117d89190611bd8565b6001600160a01b03851660009081526005602090815260408083208784529091528120549192509061180b90859061198e565b905060006101f461181d846064611b9f565b6118279190611bb6565b905081811161183c5760009350505050610a7c565b60006118488383611bf1565b60025460405163d8435ec360e01b8152600481018990529192506000916001600160a01b039091169063d8435ec390602401602060405180830381865afa158015611897573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906118bb9190611bd8565b9050806000036118d357600095505050505050610a7c565b806118e6670de0b6b3a764000084611b9f565b6118f09190611bb6565b98975050505050505050565b611904611937565b6001600160a01b03811661192e57604051631e4fbdf760e01b8152600060048201526024016115df565b6112c081611a35565b6000546001600160a01b03163314610ea25760405163118cdaa760e01b81523360048201526024016115df565b60026001540361198757604051633ee5aeb560e01b815260040160405180910390fd5b6002600155565b6000816000036119a057506000610a7c565b60025460405163d8435ec360e01b8152600481018590526000916001600160a01b03169063d8435ec390602401602060405180830381865afa1580156119ea573d6000803e3d6000fd5b505050506040513d601f19601f82011682018060405250810190611a0e9190611bd8565b9050670de0b6b3a7640000611a238285611b9f565b611a2d9190611bb6565b949350505050565b600080546001600160a01b038381166001600160a01b0319831681178455604051919092169283917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e09190a35050565b80356001600160a01b0381168114611a9c57600080fd5b919050565b600060208284031215611ab357600080fd5b611abc82611a85565b9392505050565b60008060408385031215611ad657600080fd5b50508035926020909101359150565b60008060408385031215611af857600080fd5b611b0183611a85565b946020939093013593505050565b600060208284031215611b2157600080fd5b5035919050565b60008060408385031215611b3b57600080fd5b82359150611b4b60208401611a85565b90509250929050565b600060208284031215611b6657600080fd5b81518015158114611abc57600080fd5b634e487b7160e01b600052601160045260246000fd5b80820180821115610a7c57610a7c611b76565b8082028115828204841417610a7c57610a7c611b76565b600082611bd357634e487b7160e01b600052601260045260246000fd5b500490565b600060208284031215611bea57600080fd5b5051919050565b81810381811115610a7c57610a7c611b7656fea264697066735822122068db7c1340197f401bfa10d86a36e1c6b6cba6ecb878d68deaedde76e64fdb9a64736f6c63430008140033",
+  "deployedBytecode": "0x6080604052600436106101a05760003560e01c80637adbf973116100ec578063bcbaf4871161008a578063d316f0d711610064578063d316f0d714610518578063d9e69a0514610538578063f2fde38b1461054e578063fec893861461056e57600080fd5b8063bcbaf487146104ad578063cc77a477146104c0578063d1b76f12146104f857600080fd5b80639b8621d5116100c65780639b8621d514610434578063aaf5eb681461044a578063bad4a01f14610466578063baf754891461047957600080fd5b80637adbf973146103e15780638da5cb5b1461040157806390a8ae9b1461041f57600080fd5b80632625dbae1161015957806344a7e5c81161013357806344a7e5c81461033e57806362ece16414610374578063715018a6146103ac578063767a7b05146103c157600080fd5b80632625dbae146102ce5780633fdfb2aa146102ee5780634046ebae1461031e57600080fd5b806301c76f81146101ac5780630852f9f3146101ce57806315e6bc991461020b57806316187ccc1461022b5780631c88ef1e1461025957806325d54cc7146102ae57600080fd5b366101a757005b600080fd5b3480156101b857600080fd5b506101cc6101c7366004611aa1565b61058e565b005b3480156101da57600080fd5b506007546101ee906001600160a01b031681565b6040516001600160a01b0390911681526020015b60405180910390f35b34801561021757600080fd5b506101cc610226366004611ac3565b6105f8565b34801561023757600080fd5b5061024b610246366004611ae5565b610974565b604051908152602001610202565b34801561026557600080fd5b50610279610274366004611ae5565b610a82565b604051610202919081518152602080830151908201526040808301519082015260609182015115159181019190915260800190565b3480156102ba57600080fd5b506101cc6102c9366004611ac3565b610b1b565b3480156102da57600080fd5b506101cc6102e9366004611aa1565b610dc9565b3480156102fa57600080fd5b5061030e610309366004611ae5565b610e25565b6040519015158152602001610202565b34801561032a57600080fd5b506006546101ee906001600160a01b031681565b34801561034a57600080fd5b506101ee610359366004611b0f565b6003602052600090815260409020546001600160a01b031681565b34801561038057600080fd5b5061024b61038f366004611ae5565b600560209081526000928352604080842090915290825290205481565b3480156103b857600080fd5b506101cc610e90565b3480156103cd57600080fd5b506101cc6103dc366004611ac3565b610ea4565b3480156103ed57600080fd5b506101cc6103fc366004611aa1565b6110dd565b34801561040d57600080fd5b506000546001600160a01b03166101ee565b34801561042b57600080fd5b5061024b609681565b34801561044057600080fd5b5061024b6103e881565b34801561045657600080fd5b5061024b670de0b6b3a764000081565b6101cc610474366004611b0f565b611166565b34801561048557600080fd5b506101ee7f000000000000000000000000000000000000000000000000000000000000000081565b6101cc6104bb366004611ae5565b6112c3565b3480156104cc57600080fd5b5061024b6104db366004611ae5565b600460209081526000928352604080842090915290825290205481565b34801561050457600080fd5b506101cc610513366004611b28565b61159d565b34801561052457600080fd5b5061024b610533366004611ae5565b61174f565b34801561054457600080fd5b5061024b6101f481565b34801561055a57600080fd5b506101cc610569366004611aa1565b6118fc565b34801561057a57600080fd5b506002546101ee906001600160a01b031681565b610596611937565b600680546001600160a01b038381166001600160a01b031983168117909355604080519190921680825260208201939093527fbeefc50872111fb9c2028f8772e06e99ec622d34506eec7ac0e85afd9de7889d91015b60405180910390a15050565b610600611964565b806000036106215760405163162908e360e11b815260040160405180910390fd5b604051632fed9b2d60e01b8152600481018390527f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031690632fed9b2d90602401602060405180830381865afa158015610686573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906106aa9190611b54565b6106c75760405163351dc42760e01b815260040160405180910390fd5b6040516379f32da160e01b8152600481018390527f00000000000000000000000000000000000000000000000000000000000000006001600160a01b0316906379f32da190602401602060405180830381865afa15801561072c573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906107509190611b54565b61076d5760405163466c160760e01b815260040160405180910390fd5b6000828152600360205260409020546001600160a01b03166107a2576040516317bd2ecb60e01b815260040160405180910390fd5b3360009081526005602090815260408083208584529091528120546107c8908390611b8c565b905060006107d6848361198e565b9050600060646107e86101f484611b9f565b6107f29190611bb6565b6002543360009081526004602081815260408084208b855290915280832054905163136e035160e01b815291820152929350916001600160a01b039091169063136e035190602401602060405180830381865afa158015610857573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061087b9190611bd8565b90508181101561089e57604051633a23d82560e01b815260040160405180910390fd5b3360008181526005602090815260408083208a845282528083208890556003909152908190205490516340c10f1960e01b81526004810192909252602482018790526001600160a01b0316906340c10f1990604401600060405180830381600087803b15801561090d57600080fd5b505af1158015610921573d6000803e3d6000fd5b505060408051888152602081018890528993503392507ff0ddb93dfd965f3155523eb35b018b546a5b8bd3ce2faad59deb7ee051732b8c91015b60405180910390a35050505061097060018055565b5050565b6001600160a01b03821660009081526005602090815260408083208484529091528120548082036109aa57600019915050610a7c565b6002546001600160a01b03858116600090815260046020818152604080842089855290915280832054905163136e035160e01b8152918201529092919091169063136e035190602401602060405180830381865afa158015610a10573d6000803e3d6000fd5b505050506040513d601f19601f82011682018060405250810190610a349190611bd8565b90506000610a42858461198e565b905080600003610a59576000199350505050610a7c565b80610a6c670de0b6b3a764000084611b9f565b610a769190611bb6565b93505050505b92915050565b610aaf60405180608001604052806000815260200160008152602001600081526020016000151581525090565b604080516080810182526001600160a01b03851660008181526004602090815284822087835281528482205484529181526005825283812086825282528390205490820152908101610b018585610974565b8152602001610b108585610e25565b151590529392505050565b610b23611964565b80600003610b445760405163162908e360e11b815260040160405180910390fd5b336000908152600560209081526040808320858452909152902054811115610b7f5760405163ac4314a960e01b815260040160405180910390fd5b6000828152600360205260409020546001600160a01b0316610bb4576040516317bd2ecb60e01b815260040160405180910390fd5b336000818152600560209081526040808320868452825280832054938352600482528083208684529091528120549082610bee8386611b9f565b610bf89190611bb6565b336000908152600560209081526040808320898452909152812080549293508692909190610c27908490611bf1565b90915550503360009081526005602090815260408083208884529091528120549003610c6f575033600090815260046020908152604080832087845290915281205580610c9f565b33600090815260046020908152604080832088845290915281208054839290610c99908490611bf1565b90915550505b60008581526003602052604090819020549051632770a7eb60e21b8152336004820152602481018690526001600160a01b0390911690639dc29fac90604401600060405180830381600087803b158015610cf857600080fd5b505af1158015610d0c573d6000803e3d6000fd5b50506040516000925033915083908381818185875af1925050503d8060008114610d52576040519150601f19603f3d011682016040523d82523d6000602084013e610d57565b606091505b5050905080610d79576040516312171d8360e31b815260040160405180910390fd5b3360008181526005602090815260408083208a8452825291829020548251898152918201528892917f22e81817e2b796412a3518daf7198f70c44adaac3c97992e199fda115bb834e7910161095b565b610dd1611937565b600780546001600160a01b0319166001600160a01b0383169081179091556040519081527f24cd1310c8883cbeaf5b805ab13586ce018b79c022827158ff3e8df14d3449369060200160405180910390a150565b6001600160a01b0382166000908152600560209081526040808320848452909152812054808203610e5a576000915050610a7c565b6000610e668585610974565b90506064610e7d670de0b6b3a76400006096611b9f565b610e879190611bb6565b11949350505050565b610e98611937565b610ea26000611a35565b565b610eac611964565b80600003610ecd5760405163162908e360e11b815260040160405180910390fd5b336000908152600460209081526040808320858452909152902054811115610f0857604051633a23d82560e01b815260040160405180910390fd5b336000908152600460209081526040808320858452909152812054610f2e908390611bf1565b33600090815260056020908152604080832087845290915290205490915080156110115760025460405163136e035160e01b8152600481018490526000916001600160a01b03169063136e035190602401602060405180830381865afa158015610f9c573d6000803e3d6000fd5b505050506040513d601f19601f82011682018060405250810190610fc09190611bd8565b90506000610fce868461198e565b905060006064610fe06101f484611b9f565b610fea9190611bb6565b90508083101561100d57604051633a23d82560e01b815260040160405180910390fd5b5050505b3360008181526004602090815260408083208884529091528082208590555190919085908381818185875af1925050503d806000811461106d576040519150601f19603f3d011682016040523d82523d6000602084013e611072565b606091505b5050905080611094576040516312171d8360e31b815260040160405180910390fd5b6040805185815260208101859052869133917ffae26280bca25d80f1501a9e363c73d3845e651c9aaae54f1fc09a9dcd5f3303910160405180910390a350505061097060018055565b6110e5611937565b6001600160a01b03811661110c5760405163d92e233d60e01b815260040160405180910390fd5b600280546001600160a01b038381166001600160a01b031983168117909355604080519190921680825260208201939093527f078c3b417dadf69374a59793b829c52001247130433427049317bde56607b1b791016105ec565b61116e611964565b3460000361118f5760405163162908e360e11b815260040160405180910390fd5b604051632fed9b2d60e01b8152600481018290527f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031690632fed9b2d90602401602060405180830381865afa1580156111f4573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906112189190611b54565b6112355760405163351dc42760e01b815260040160405180910390fd5b3360009081526004602090815260408083208484529091528120805434929061125f908490611b8c565b9091555050336000818152600460209081526040808320858452825291829020548251348152918201528392917f0b1992dffc262be88559dcaf96464e9d661d8bfca7e82f2bb73e31932a82187c910160405180910390a36112c060018055565b50565b6112cb611964565b6112d58282610e25565b6112f257604051636415f95960e01b815260040160405180910390fd5b6001600160a01b03821660009081526005602090815260408083208484529091528120549081900361133757604051634fc2e0e160e01b815260040160405180910390fd5b6000828152600360205260409020546001600160a01b031661136c576040516317bd2ecb60e01b815260040160405180910390fd5b6000611378838361198e565b6001600160a01b03808616600090815260046020818152604080842089855290915280832054600254915163d4edc40360e01b8152959650949293169163d4edc403916113cb9187910190815260200190565b602060405180830381865afa1580156113e8573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061140c9190611bd8565b90508034101561142f5760405163162908e360e11b815260040160405180910390fd5b6001600160a01b038616600081815260046020908152604080832089845282528083208390559282526005815282822088835290528181208190559051339084908381818185875af1925050503d80600081146114a8576040519150601f19603f3d011682016040523d82523d6000602084013e6114ad565b606091505b50509050806114cf576040516312171d8360e31b815260040160405180910390fd5b8134111561154757336114e28334611bf1565b604051600081818185875af1925050503d806000811461151e576040519150601f19603f3d011682016040523d82523d6000602084013e611523565b606091505b50508091505080611547576040516312171d8360e31b815260040160405180910390fd5b6040805186815260208101859052339188916001600160a01b038b16917fe086979fec7c5bf71045df524eb3ac4a59b9ed8aec05d1969c844aee1db6fc62910160405180910390a4505050505061097060018055565b6000546001600160a01b031633148015906115c357506007546001600160a01b03163314155b156115e85760405163118cdaa760e01b81523360048201526024015b60405180910390fd5b604051632fed9b2d60e01b8152600481018390527f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031690632fed9b2d90602401602060405180830381865afa15801561164d573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906116719190611b54565b61168e5760405163351dc42760e01b815260040160405180910390fd5b6000828152600360205260409020546001600160a01b0316156116c45760405163b2de92eb60e01b815260040160405180910390fd5b6001600160a01b0381166116eb5760405163d92e233d60e01b815260040160405180910390fd5b60008281526003602090815260409182902080546001600160a01b0319166001600160a01b038516908117909155915191825283917f0ea005f51e3badce782451426a88ddc59bb53fa1c42fa6dec1f753465111a697910160405180910390a25050565b6002546001600160a01b03838116600090815260046020818152604080842087855290915280832054905163136e035160e01b81529182015290928392169063136e035190602401602060405180830381865afa1580156117b4573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906117d89190611bd8565b6001600160a01b03851660009081526005602090815260408083208784529091528120549192509061180b90859061198e565b905060006101f461181d846064611b9f565b6118279190611bb6565b905081811161183c5760009350505050610a7c565b60006118488383611bf1565b60025460405163d8435ec360e01b8152600481018990529192506000916001600160a01b039091169063d8435ec390602401602060405180830381865afa158015611897573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906118bb9190611bd8565b9050806000036118d357600095505050505050610a7c565b806118e6670de0b6b3a764000084611b9f565b6118f09190611bb6565b98975050505050505050565b611904611937565b6001600160a01b03811661192e57604051631e4fbdf760e01b8152600060048201526024016115df565b6112c081611a35565b6000546001600160a01b03163314610ea25760405163118cdaa760e01b81523360048201526024016115df565b60026001540361198757604051633ee5aeb560e01b815260040160405180910390fd5b6002600155565b6000816000036119a057506000610a7c565b60025460405163d8435ec360e01b8152600481018590526000916001600160a01b03169063d8435ec390602401602060405180830381865afa1580156119ea573d6000803e3d6000fd5b505050506040513d601f19601f82011682018060405250810190611a0e9190611bd8565b9050670de0b6b3a7640000611a238285611b9f565b611a2d9190611bb6565b949350505050565b600080546001600160a01b038381166001600160a01b0319831681178455604051919092169283917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e09190a35050565b80356001600160a01b0381168114611a9c57600080fd5b919050565b600060208284031215611ab357600080fd5b611abc82611a85565b9392505050565b60008060408385031215611ad657600080fd5b50508035926020909101359150565b60008060408385031215611af857600080fd5b611b0183611a85565b946020939093013593505050565b600060208284031215611b2157600080fd5b5035919050565b60008060408385031215611b3b57600080fd5b82359150611b4b60208401611a85565b90509250929050565b600060208284031215611b6657600080fd5b81518015158114611abc57600080fd5b634e487b7160e01b600052601160045260246000fd5b80820180821115610a7c57610a7c611b76565b8082028115828204841417610a7c57610a7c611b76565b600082611bd357634e487b7160e01b600052601260045260246000fd5b500490565b600060208284031215611bea57600080fd5b5051919050565b81810381811115610a7c57610a7c611b7656fea264697066735822122068db7c1340197f401bfa10d86a36e1c6b6cba6ecb878d68deaedde76e64fdb9a64736f6c63430008140033",
+  "devdoc": {
+    "details": "This version uses native MNT (msg.value) instead of ERC20 MockMNT      On Mantle, MNT is the native gas token similar to ETH on Ethereum.            Key features:      - State is (user → basketId → position) scoped      - A user can have multiple baskets with different risk profiles      - Each (user, basketId) pair is an independent position      - Uses NATIVE MNT (msg.value) as collateral       COLLATERAL FLOW:      1. User deposits native MNT collateral via msg.value      2. User can mint basket tokens if they have sufficient collateral      3. When minting, debt is created and tracked per (user, basketId)      4. When burning, debt is repaid and collateral is freed",
+    "errors": {
+      "OwnableInvalidOwner(address)": [
+        {
+          "details": "The owner is not a valid owner account. (eg. `address(0)`)"
+        }
+      ],
+      "OwnableUnauthorizedAccount(address)": [
+        {
+          "details": "The caller account is not authorized to perform an operation."
+        }
+      ],
+      "ReentrancyGuardReentrantCall()": [
+        {
+          "details": "Unauthorized reentrant call."
+        }
+      ]
+    },
+    "kind": "dev",
+    "methods": {
+      "constructor": {
+        "params": {
+          "_basketOracle": "Address of the BasketOracle",
+          "_basketRegistry": "Address of the BasketRegistry"
+        }
+      },
+      "depositCollateral(uint256)": {
+        "details": "Send MNT via msg.value",
+        "params": {
+          "basketId": "The basket to deposit collateral for"
+        }
+      },
+      "mintBasket(uint256,uint256)": {
+        "details": "Requires sufficient collateral to maintain COLLATERAL_RATIO"
+      },
+      "owner()": {
+        "details": "Returns the address of the current owner."
+      },
+      "renounceOwnership()": {
+        "details": "Leaves the contract without owner. It will not be possible to call `onlyOwner` functions. Can only be called by the current owner. NOTE: Renouncing ownership will leave the contract without an owner, thereby disabling any functionality that is only available to the owner."
+      },
+      "setAuthorizedFactory(address)": {
+        "params": {
+          "_factory": "Address of the BasketFactory contract"
+        }
+      },
+      "transferOwnership(address)": {
+        "details": "Transfers ownership of the contract to a new account (`newOwner`). Can only be called by the current owner."
+      },
+      "withdrawCollateral(uint256,uint256)": {
+        "details": "Can only withdraw excess collateral that maintains required ratio"
+      }
+    },
+    "title": "BasketVault",
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {
+      "COLLATERAL_RATIO()": {
+        "notice": "Required collateral ratio for minting (500%)"
+      },
+      "LIQUIDATION_PENALTY()": {
+        "notice": "Liquidation penalty in basis points (10% = 1000 bp)"
+      },
+      "LIQUIDATION_THRESHOLD()": {
+        "notice": "Liquidation threshold (150%)"
+      },
+      "PRECISION()": {
+        "notice": "Decimal precision for calculations (1e18)"
+      },
+      "authorizedFactory()": {
+        "notice": "Authorized factory that can register basket tokens"
+      },
+      "basketOracle()": {
+        "notice": "Reference to the basket oracle for pricing"
+      },
+      "basketRegistry()": {
+        "notice": "Reference to the basket registry"
+      },
+      "basketTokens(uint256)": {
+        "notice": "Mapping from basketId to its token contract"
+      },
+      "burnBasket(uint256,uint256)": {
+        "notice": "Burn basket tokens to repay debt and free collateral"
+      },
+      "constructor": {
+        "notice": "Initialize the vault with dependencies"
+      },
+      "depositCollateral(uint256)": {
+        "notice": "Deposit native MNT collateral for a specific basket"
+      },
+      "liquidator()": {
+        "notice": "Authorized liquidator address (Vincent bot)"
+      },
+      "mintBasket(uint256,uint256)": {
+        "notice": "Mint basket tokens by taking on debt"
+      },
+      "registerBasketToken(uint256,address)": {
+        "notice": "Register a basket token for a basket"
+      },
+      "setAuthorizedFactory(address)": {
+        "notice": "Set the authorized factory address"
+      },
+      "userCollateral(address,uint256)": {
+        "notice": "User collateral per basket: user => basketId => collateral amount (in MNT, 18 decimals)"
+      },
+      "userDebt(address,uint256)": {
+        "notice": "User debt per basket: user => basketId => debt amount (in basket tokens, 18 decimals)"
+      },
+      "withdrawCollateral(uint256,uint256)": {
+        "notice": "Withdraw native MNT collateral from a specific basket"
+      }
+    },
+    "notice": "Vault for managing basket-scoped collateral positions using NATIVE MNT",
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [
+      {
+        "astId": 8,
+        "contract": "contracts/BasketVault.sol:BasketVault",
+        "label": "_owner",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_address"
+      },
+      {
+        "astId": 944,
+        "contract": "contracts/BasketVault.sol:BasketVault",
+        "label": "_status",
+        "offset": 0,
+        "slot": "1",
+        "type": "t_uint256"
+      },
+      {
+        "astId": 2464,
+        "contract": "contracts/BasketVault.sol:BasketVault",
+        "label": "basketOracle",
+        "offset": 0,
+        "slot": "2",
+        "type": "t_contract(BasketOracle)1903"
+      },
+      {
+        "astId": 2474,
+        "contract": "contracts/BasketVault.sol:BasketVault",
+        "label": "basketTokens",
+        "offset": 0,
+        "slot": "3",
+        "type": "t_mapping(t_uint256,t_contract(EquiBasketToken)3769)"
+      },
+      {
+        "astId": 2481,
+        "contract": "contracts/BasketVault.sol:BasketVault",
+        "label": "userCollateral",
+        "offset": 0,
+        "slot": "4",
+        "type": "t_mapping(t_address,t_mapping(t_uint256,t_uint256))"
+      },
+      {
+        "astId": 2488,
+        "contract": "contracts/BasketVault.sol:BasketVault",
+        "label": "userDebt",
+        "offset": 0,
+        "slot": "5",
+        "type": "t_mapping(t_address,t_mapping(t_uint256,t_uint256))"
+      },
+      {
+        "astId": 2491,
+        "contract": "contracts/BasketVault.sol:BasketVault",
+        "label": "liquidator",
+        "offset": 0,
+        "slot": "6",
+        "type": "t_address"
+      },
+      {
+        "astId": 2494,
+        "contract": "contracts/BasketVault.sol:BasketVault",
+        "label": "authorizedFactory",
+        "offset": 0,
+        "slot": "7",
+        "type": "t_address"
+      }
+    ],
+    "types": {
+      "t_address": {
+        "encoding": "inplace",
+        "label": "address",
+        "numberOfBytes": "20"
+      },
+      "t_contract(BasketOracle)1903": {
+        "encoding": "inplace",
+        "label": "contract BasketOracle",
+        "numberOfBytes": "20"
+      },
+      "t_contract(EquiBasketToken)3769": {
+        "encoding": "inplace",
+        "label": "contract EquiBasketToken",
+        "numberOfBytes": "20"
+      },
+      "t_mapping(t_address,t_mapping(t_uint256,t_uint256))": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => mapping(uint256 => uint256))",
+        "numberOfBytes": "32",
+        "value": "t_mapping(t_uint256,t_uint256)"
+      },
+      "t_mapping(t_uint256,t_contract(EquiBasketToken)3769)": {
+        "encoding": "mapping",
+        "key": "t_uint256",
+        "label": "mapping(uint256 => contract EquiBasketToken)",
+        "numberOfBytes": "32",
+        "value": "t_contract(EquiBasketToken)3769"
+      },
+      "t_mapping(t_uint256,t_uint256)": {
+        "encoding": "mapping",
+        "key": "t_uint256",
+        "label": "mapping(uint256 => uint256)",
+        "numberOfBytes": "32",
+        "value": "t_uint256"
+      },
+      "t_uint256": {
+        "encoding": "inplace",
+        "label": "uint256",
+        "numberOfBytes": "32"
+      }
+    }
+  }
+}
