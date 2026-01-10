@@ -1,0 +1,193 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
+@theme {
+  --shadow-center: 0 0 12px -2px rgb(0 0 0 / 0.05);
+  --animate-pulse-fast: pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --font-family-sans: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+@plugin "daisyui" {
+  themes:
+    equiblock,
+    dark --prefersdark;
+}
+
+@plugin "daisyui/theme" {
+  name: "equiblock";
+
+  --color-primary: #3B82F6;
+  --color-primary-content: #ffffff;
+  --color-secondary: #1E293B;
+  --color-secondary-content: #ffffff;
+  --color-accent: #3B82F6;
+  --color-accent-content: #ffffff;
+  --color-neutral: #ffffff;
+  --color-neutral-content: #000000;
+  --color-base-100: #000000;
+  --color-base-200: #0B0F1C;
+  --color-base-300: #1E293B;
+  --color-base-content: #ffffff;
+  --color-info: #3B82F6;
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-error: #EF4444;
+
+  --radius-field: 0.5rem;
+  --radius-box: 0.75rem;
+  --tt-tailw: 6px;
+}
+
+@plugin "daisyui/theme" {
+  name: "dark";
+
+  --color-primary: #3B82F6;
+  --color-primary-content: #ffffff;
+  --color-secondary: #1E293B;
+  --color-secondary-content: #ffffff;
+  --color-accent: #3B82F6;
+  --color-accent-content: #ffffff;
+  --color-neutral: #ffffff;
+  --color-neutral-content: #000000;
+  --color-base-100: #000000;
+  --color-base-200: #0B0F1C;
+  --color-base-300: #1E293B;
+  --color-base-content: #ffffff;
+  --color-info: #3B82F6;
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-error: #EF4444;
+
+  --radius-field: 0.5rem;
+  --radius-box: 0.75rem;
+
+  --tt-tailw: 6px;
+  --tt-bg: var(--color-primary);
+}
+
+/*
+  The default border color has changed to `currentColor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentColor);
+  }
+
+  p {
+    margin: 1rem 0;
+  }
+
+  body {
+    min-height: 100vh;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: #000000;
+    color: #ffffff;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    margin-bottom: 0.5rem;
+    line-height: 1.2;
+    font-weight: 700;
+  }
+}
+
+:root,
+[data-theme] {
+  background: var(--color-base-100);
+}
+
+/* EquiBlock Custom Styles */
+.glow-border {
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.15);
+}
+
+.glow-border:hover {
+  border-color: rgba(59, 130, 246, 0.5);
+  box-shadow: 0 0 30px rgba(59, 130, 246, 0.25);
+}
+
+.glow-button {
+  background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+  transition: all 0.3s ease;
+}
+
+.glow-button:hover {
+  box-shadow: 0 0 30px rgba(59, 130, 246, 0.6);
+  transform: translateY(-2px);
+}
+
+.card-glass {
+  background: rgba(30, 41, 59, 0.5);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 0.75rem;
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.btn {
+  @apply shadow-md;
+  font-weight: 600;
+}
+
+.btn.btn-ghost {
+  @apply shadow-none;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+  transform: translateY(-1px);
+}
+
+.link {
+  text-underline-offset: 2px;
+}
+
+.link:hover {
+  opacity: 80%;
+}
+
+/* Animation keyframes */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.6s ease-out;
+}
