@@ -50,9 +50,10 @@ const Dashboard: NextPage = () => {
     contractName: "MockMNT",
     functionName: "balanceOf",
     args: [address as `0x${string}`],
-  });
+  } as any);
 
-  const userMnt = mntBalance ? Number(formatEther(mntBalance)) : 0;
+  const normalizedMntBalance = mntBalance as unknown as bigint | undefined;
+  const userMnt = normalizedMntBalance ? Number(formatEther(normalizedMntBalance)) : 0;
 
   // Calculate portfolio value
   const collateralValueUSD = collateral * mntPrice;

@@ -3155,10 +3155,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@pythnetwork/pyth-sdk-solidity@npm:^4.2.0":
-  version: 4.2.0
-  resolution: "@pythnetwork/pyth-sdk-solidity@npm:4.2.0"
-  checksum: 93d4e4ffad41e3562a68f23e1ad05a9951c8200ee83a5ed10a8eb011c576c16960767876eff163bb109b5bf7fb05a6cd04b6b701a2c44e91304e13551edc8b57
+"@pythnetwork/hermes-client@npm:^2.1.0":
+  version: 2.1.0
+  resolution: "@pythnetwork/hermes-client@npm:2.1.0"
+  dependencies:
+    "@zodios/core": ^10.9.6
+    eventsource: ^3.0.5
+    zod: ^3.23.8
+  checksum: 070f23ffa996f32f26851850b691100b14b9169eb5b305e51d05a10d2045d132658cad501009074fdc97237ac428e8c919fb4af5cc522e609b20ca3414e3a5c9
+  languageName: node
+  linkType: hard
+
+"@pythnetwork/pyth-sdk-solidity@npm:^4.3.1":
+  version: 4.3.1
+  resolution: "@pythnetwork/pyth-sdk-solidity@npm:4.3.1"
+  checksum: 62713e002b7a9387729204a992bcfef5120aa00ca2e1eb6065b0910590b713e92f88b847e0b682cc7e60aa1ae02cc3c08605dbeeb04ebed752e84faf703976a8
   languageName: node
   linkType: hard
 
@@ -3469,6 +3480,7 @@ __metadata:
     "@nomicfoundation/hardhat-network-helpers": ~1.0.11
     "@nomicfoundation/hardhat-verify": ~2.0.10
     "@openzeppelin/contracts": ~5.0.2
+    "@pythnetwork/hermes-client": ^2.1.0
     "@typechain/ethers-v5": ~11.1.2
     "@typechain/ethers-v6": ~0.5.1
     "@typechain/hardhat": ~9.1.0
@@ -3504,6 +3516,7 @@ __metadata:
   resolution: "@se-2/nextjs@workspace:packages/nextjs"
   dependencies:
     "@heroicons/react": ~2.1.5
+    "@pythnetwork/hermes-client": ^2.1.0
     "@rainbow-me/rainbowkit": 2.2.8
     "@tailwindcss/postcss": 4.0.15
     "@tanstack/react-query": ~5.59.15
@@ -3514,6 +3527,7 @@ __metadata:
     "@uniswap/v2-sdk": ~4.6.1
     abitype: 1.0.6
     autoprefixer: ~10.4.20
+    axios: ^1.7.9
     bgipfs: ~0.0.12
     blo: ~1.2.0
     burner-connector: 0.0.18
@@ -5452,6 +5466,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@zodios/core@npm:^10.9.6":
+  version: 10.9.6
+  resolution: "@zodios/core@npm:10.9.6"
+  peerDependencies:
+    axios: ^0.x || ^1.0.0
+    zod: ^3.x
+  checksum: 482a80bd4da661734f9ed276a92d9275fa1b76011bef26ede4a851e4c495d9103e6c9456074b9e50e4c89ad7e83fcead6ea45ffba615e6ff54b8088433ba47fc
+  languageName: node
+  linkType: hard
+
 "abbrev@npm:1, abbrev@npm:1.0.x":
   version: 1.0.9
   resolution: "abbrev@npm:1.0.9"
@@ -6124,6 +6148,17 @@ __metadata:
     form-data: ^4.0.4
     proxy-from-env: ^1.1.0
   checksum: f0331594fe053a4bbff04104edb073973a3aabfad2e56b0aa18de82428aa63f6f0839ca3d837258ec739cb4528014121793b1649a21e5115ffb2bf8237eadca3
+  languageName: node
+  linkType: hard
+
+"axios@npm:^1.7.9":
+  version: 1.13.2
+  resolution: "axios@npm:1.13.2"
+  dependencies:
+    follow-redirects: ^1.15.6
+    form-data: ^4.0.4
+    proxy-from-env: ^1.1.0
+  checksum: 057d0204d5930e2969f0bccb9f0752745b1524a36994667833195e7e1a82f245d660752ba8517b2dbea17e9e4ed0479f10b80c5fe45edd0b5a0df645c0060386
   languageName: node
   linkType: hard
 
@@ -8896,6 +8931,22 @@ __metadata:
   version: 3.3.0
   resolution: "events@npm:3.3.0"
   checksum: f6f487ad2198aa41d878fa31452f1a3c00958f46e9019286ff4787c84aac329332ab45c9cdc8c445928fc6d7ded294b9e005a7fce9426488518017831b272780
+  languageName: node
+  linkType: hard
+
+"eventsource-parser@npm:^3.0.1":
+  version: 3.0.6
+  resolution: "eventsource-parser@npm:3.0.6"
+  checksum: b90ec27f8d992afa7df171db202faaedb1782214f64e50690cbf78bc2629f7751575aa27a72d8ae447e5a7094938406b1a3ea1d89e5f0f2d6916cc8a694b6587
+  languageName: node
+  linkType: hard
+
+"eventsource@npm:^3.0.5":
+  version: 3.0.7
+  resolution: "eventsource@npm:3.0.7"
+  dependencies:
+    eventsource-parser: ^3.0.1
+  checksum: cd8cbc3418238b9d751b6652edf442d4b869829fbc3b73444abca1816fe3d23dc707130dd9a990360bc27c281d986f2f62059d870921173425c3ac28d20a8414
   languageName: node
   linkType: hard
 
@@ -14909,7 +14960,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "se-2@workspace:."
   dependencies:
-    "@pythnetwork/pyth-sdk-solidity": ^4.2.0
+    "@pythnetwork/pyth-sdk-solidity": ^4.3.1
     "@types/node": 18
     husky: ~9.1.6
     lint-staged: ~13.2.2
@@ -17727,7 +17778,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zod@npm:^3.22.4":
+"zod@npm:^3.22.4, zod@npm:^3.23.8":
   version: 3.25.76
   resolution: "zod@npm:3.25.76"
   checksum: c9a403a62b329188a5f6bd24d5d935d2bba345f7ab8151d1baa1505b5da9f227fb139354b043711490c798e91f3df75991395e40142e6510a4b16409f302b849

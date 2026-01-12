@@ -7,7 +7,7 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 const deployedContracts = {
   5003: {
     BasketFactory: {
-      address: "0x8a3E21b968118E5B8cF80D36A3F91DDf068a3d34",
+      address: "0x2F17fcff4B6b4083741f374A777D25610f632191",
       abi: [
         {
           inputs: [
@@ -287,10 +287,10 @@ const deployedContracts = {
         renounceOwnership: "@openzeppelin/contracts/access/Ownable.sol",
         transferOwnership: "@openzeppelin/contracts/access/Ownable.sol",
       },
-      deployedOnBlock: 32782055,
+      deployedOnBlock: 33322888,
     },
     BasketOracle: {
-      address: "0xc0c575bD5D58f9f19C84a2EEB911FcAbd38654c8",
+      address: "0x5Ae0d275185A6388b3485Ba439FC5FD387778dec",
       abi: [
         {
           inputs: [
@@ -328,6 +328,33 @@ const deployedContracts = {
         {
           inputs: [],
           name: "BasketDoesNotExist",
+          type: "error",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "requiredFee",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "providedFee",
+              type: "uint256",
+            },
+          ],
+          name: "InsufficientUpdateFee",
+          type: "error",
+        },
+        {
+          inputs: [
+            {
+              internalType: "string",
+              name: "assetId",
+              type: "string",
+            },
+          ],
+          name: "InvalidPriceFeedId",
           type: "error",
         },
         {
@@ -373,18 +400,18 @@ const deployedContracts = {
             },
             {
               indexed: false,
-              internalType: "uint256",
-              name: "oldPrice",
-              type: "uint256",
+              internalType: "bytes32",
+              name: "oldPriceFeedId",
+              type: "bytes32",
             },
             {
               indexed: false,
-              internalType: "uint256",
-              name: "newPrice",
-              type: "uint256",
+              internalType: "bytes32",
+              name: "newPriceFeedId",
+              type: "bytes32",
             },
           ],
-          name: "AssetPriceUpdated",
+          name: "AssetPriceFeedUpdated",
           type: "event",
         },
         {
@@ -398,9 +425,9 @@ const deployedContracts = {
             },
             {
               indexed: false,
-              internalType: "uint256",
-              name: "initialPrice",
-              type: "uint256",
+              internalType: "bytes32",
+              name: "priceFeedId",
+              type: "bytes32",
             },
           ],
           name: "AssetRegistered",
@@ -452,12 +479,12 @@ const deployedContracts = {
               type: "string",
             },
           ],
-          name: "assetPrices",
+          name: "assetPriceFeedIds",
           outputs: [
             {
-              internalType: "uint256",
+              internalType: "bytes32",
               name: "",
-              type: "uint256",
+              type: "bytes32",
             },
           ],
           stateMutability: "view",
@@ -484,12 +511,12 @@ const deployedContracts = {
               type: "string[]",
             },
             {
-              internalType: "uint256[]",
-              name: "prices",
-              type: "uint256[]",
+              internalType: "bytes32[]",
+              name: "priceFeedIds",
+              type: "bytes32[]",
             },
           ],
-          name: "batchSetAssetPrices",
+          name: "batchSetAssetPriceFeeds",
           outputs: [],
           stateMutability: "nonpayable",
           type: "function",
@@ -520,6 +547,45 @@ const deployedContracts = {
             {
               internalType: "uint256",
               name: "price",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "string",
+              name: "assetId",
+              type: "string",
+            },
+          ],
+          name: "getAssetPriceDebug",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "scaledPrice",
+              type: "uint256",
+            },
+            {
+              internalType: "int64",
+              name: "rawPrice",
+              type: "int64",
+            },
+            {
+              internalType: "int32",
+              name: "expo",
+              type: "int32",
+            },
+            {
+              internalType: "uint64",
+              name: "conf",
+              type: "uint64",
+            },
+            {
+              internalType: "uint256",
+              name: "publishTime",
               type: "uint256",
             },
           ],
@@ -577,6 +643,25 @@ const deployedContracts = {
             {
               internalType: "uint256",
               name: "usdValue",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "bytes[]",
+              name: "priceUpdate",
+              type: "bytes[]",
+            },
+          ],
+          name: "getPythUpdateFee",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
               type: "uint256",
             },
           ],
@@ -642,6 +727,19 @@ const deployedContracts = {
           type: "function",
         },
         {
+          inputs: [],
+          name: "pyth",
+          outputs: [
+            {
+              internalType: "contract IPyth",
+              name: "",
+              type: "address",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
           inputs: [
             {
               internalType: "string",
@@ -649,9 +747,9 @@ const deployedContracts = {
               type: "string",
             },
             {
-              internalType: "uint256",
-              name: "price",
-              type: "uint256",
+              internalType: "bytes32",
+              name: "priceFeedId",
+              type: "bytes32",
             },
           ],
           name: "registerAsset",
@@ -693,12 +791,12 @@ const deployedContracts = {
               type: "string",
             },
             {
-              internalType: "uint256",
-              name: "newPrice",
-              type: "uint256",
+              internalType: "bytes32",
+              name: "priceFeedId",
+              type: "bytes32",
             },
           ],
-          name: "setAssetPrice",
+          name: "setAssetPriceFeed",
           outputs: [],
           stateMutability: "nonpayable",
           type: "function",
@@ -732,6 +830,25 @@ const deployedContracts = {
         {
           inputs: [
             {
+              internalType: "bytes[]",
+              name: "priceUpdate",
+              type: "bytes[]",
+            },
+          ],
+          name: "updatePriceFeeds",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "feePaid",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "payable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
               internalType: "uint256",
               name: "basketId",
               type: "uint256",
@@ -759,10 +876,10 @@ const deployedContracts = {
         renounceOwnership: "@openzeppelin/contracts/access/Ownable.sol",
         transferOwnership: "@openzeppelin/contracts/access/Ownable.sol",
       },
-      deployedOnBlock: 32782049,
+      deployedOnBlock: 33322880,
     },
     BasketRegistry: {
-      address: "0x4D03bfC19572c19E57B90Ca2Bb585abb2F005068",
+      address: "0x3C3d0E397065839e9d01a90bE04d01632062356C",
       abi: [
         {
           inputs: [],
@@ -1164,10 +1281,10 @@ const deployedContracts = {
         renounceOwnership: "@openzeppelin/contracts/access/Ownable.sol",
         transferOwnership: "@openzeppelin/contracts/access/Ownable.sol",
       },
-      deployedOnBlock: 32782047,
+      deployedOnBlock: 33246507,
     },
     BasketVault: {
-      address: "0xb62C526E8bE91923C8fFBa208908125e59712D73",
+      address: "0xF43Ac9b9b768c3080559e52D0d33FA0234D9C686",
       abi: [
         {
           inputs: [
@@ -2001,7 +2118,7 @@ const deployedContracts = {
         renounceOwnership: "@openzeppelin/contracts/access/Ownable.sol",
         transferOwnership: "@openzeppelin/contracts/access/Ownable.sol",
       },
-      deployedOnBlock: 32782052,
+      deployedOnBlock: 33322885,
     },
   },
   11155111: {

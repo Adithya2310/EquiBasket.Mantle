@@ -59,6 +59,6 @@
     "node": ">=20.18.3"
   },
   "dependencies": {
-    "@pythnetwork/pyth-sdk-solidity": "^4.2.0"
+    "@pythnetwork/pyth-sdk-solidity": "^4.3.1"
   }
 }

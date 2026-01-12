@@ -2,6 +2,10 @@
 pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
+
+import "@pythnetwork/pyth-sdk-solidity/IPyth.sol";
+import "@pythnetwork/pyth-sdk-solidity/PythStructs.sol";
+
 import "./BasketRegistry.sol";
 
 /**
@@ -13,10 +17,8 @@ import "./BasketRegistry.sol";
  *      1. Reading basket composition from BasketRegistry
  *      2. Fetching price for each underlying asset
  *      3. Computing weighted average basket price
- * 
- *      For the hackathon, asset prices are hardcoded on-chain in USD format.
- *      This module is intentionally designed to be replaced later with a
- *      real oracle integration (e.g., Pyth, Chainlink).
+ *
+ *      Asset prices are pulled from Pyth price feeds (configured per asset).
  * 
  *      All prices are stored and returned in 1e18 format.
  *      For example, $100 = 100 * 1e18 = 100000000000000000000
@@ -31,8 +33,8 @@ contract BasketOracle is Ownable {
     /// @notice Reference to the BasketRegistry for reading composition
     BasketRegistry public immutable basketRegistry;
     
-    /// @notice Mapping from asset identifier to USD price (1e18 format)
-    mapping(string => uint256) public assetPrices;
+    /// @notice Mapping from asset identifier to Pyth price feed id
+    mapping(string => bytes32) public assetPriceFeedIds;
     
     /// @notice List of all registered asset identifiers
     string[] public registeredAssets;
@@ -43,19 +45,21 @@ contract BasketOracle is Ownable {
     /// @notice MNT/USD price in 1e18 format
     /// @dev Used for calculating collateral value in the vault
     uint256 public mntUsdPrice;
+
+    IPyth public pyth;
     
     // ============================================================
     // ========================= EVENTS ===========================
     // ============================================================
     
-    /// @notice Emitted when an asset price is updated
-    event AssetPriceUpdated(string indexed assetId, uint256 oldPrice, uint256 newPrice);
+    /// @notice Emitted when an asset price feed is updated
+    event AssetPriceFeedUpdated(string indexed assetId, bytes32 oldPriceFeedId, bytes32 newPriceFeedId);
     
     /// @notice Emitted when MNT/USD price is updated
     event MntPriceUpdated(uint256 oldPrice, uint256 newPrice);
     
     /// @notice Emitted when a new asset is registered
-    event AssetRegistered(string assetId, uint256 initialPrice);
+    event AssetRegistered(string assetId, bytes32 priceFeedId);
     
     // ============================================================
     // ========================= ERRORS ===========================
@@ -76,6 +80,12 @@ contract BasketOracle is Ownable {
     /// @notice Thrown when asset is already registered
     error AssetAlreadyRegistered(string assetId);
 
+    /// @notice Thrown when a price feed id is missing or invalid
+    error InvalidPriceFeedId(string assetId);
+
+    /// @notice Thrown when insufficient fee is provided to update Pyth price feeds
+    error InsufficientUpdateFee(uint256 requiredFee, uint256 providedFee);
+
     // ============================================================
     // ====================== CONSTRUCTOR =========================
     // ============================================================
@@ -87,21 +97,24 @@ contract BasketOracle is Ownable {
     constructor(address _basketRegistry) Ownable(msg.sender) {
         basketRegistry = BasketRegistry(_basketRegistry);
         
-        // Initialize with default prices for common assets (in 1e18 format)
-        // These represent example assets that might be in baskets
-        _registerAssetWithPrice("AAPL", 175 * 1e18);    // Apple Inc. at $175
-        _registerAssetWithPrice("NVDA", 490 * 1e18);    // NVIDIA at $490
-        _registerAssetWithPrice("GOLD", 2050 * 1e18);   // Gold per oz at $2050
-        _registerAssetWithPrice("SILVER", 24 * 1e18);   // Silver per oz at $24
-        _registerAssetWithPrice("HITACHI", 92 * 1e18);  // Hitachi at $92
-        _registerAssetWithPrice("MSFT", 380 * 1e18);    // Microsoft at $380
-        _registerAssetWithPrice("GOOGL", 140 * 1e18);   // Alphabet at $140
-        _registerAssetWithPrice("AMZN", 155 * 1e18);    // Amazon at $155
-        _registerAssetWithPrice("TSLA", 250 * 1e18);    // Tesla at $250
-        _registerAssetWithPrice("BTC", 42000 * 1e18);   // Bitcoin at $42000
+        // Initialize with Pyth price feed ids for supported assets
+        _registerAssetWithPriceFeed("AAPL", 0x49f6b65cb1de6b10eaf75e7c03ca029c306d0357e91b5311b175084a5ad55688);
+        _registerAssetWithPriceFeed("NVDA", 0xb1073854ed24cbc755dc527418f52b7d271f6cc967bbf8d8129112b18860a593);
+        // _registerAssetWithPriceFeed("GOLD", 0x765d2ba906dbc32ca17cc11f5310a89e9ee1f6420508c63861f2f8ba4ee34bb2);
+        // _registerAssetWithPriceFeed("SILVER", 0xf2fb02c32b055c805e7238d628e5e9dadef274376114eb1f012337cabe93871e);
+        _registerAssetWithPriceFeed("GOLD", 0xe62df6c8b4a85fe1a67db44dc12de5db330f7ac66b72dc658afedf0f4a415b43);
+        _registerAssetWithPriceFeed("SILVER", 0xe62df6c8b4a85fe1a67db44dc12de5db330f7ac66b72dc658afedf0f4a415b43);
+        _registerAssetWithPriceFeed("HITACHI", 0xd0ca23c1cc005e004ccf1db5bf76aeb6a49218f43dac3d4b275e92de12ded4d1);
+        _registerAssetWithPriceFeed("MSFT", 0xd0ca23c1cc005e004ccf1db5bf76aeb6a49218f43dac3d4b275e92de12ded4d1);
+        _registerAssetWithPriceFeed("GOOGL", 0x5a48c03e9b9cb337801073ed9d166817473697efff0d138874e0f6a33d6d5aa6);
+        _registerAssetWithPriceFeed("AMZN", 0xb5d0e0fa58a1f8b81498ae670ce93c872d14434b72c364885d4fa1b257cbb07a);
+        _registerAssetWithPriceFeed("TSLA", 0x16dad506d7db8da01c87581c87ca897a012a153557d4d578c3b9c9e1bc0632f1);
+        _registerAssetWithPriceFeed("BTC", 0xe62df6c8b4a85fe1a67db44dc12de5db330f7ac66b72dc658afedf0f4a415b43);
         
         // Initialize MNT price (example: $0.50)
         mntUsdPrice = 5 * 1e17; // 0.5 * 1e18
+
+        pyth = IPyth(0x98046Bd286715D3B0BC227Dd7a956b83D8978603);
     }
 
     // ============================================================
@@ -109,12 +122,12 @@ contract BasketOracle is Ownable {
     // ============================================================
     
     /**
-     * @notice Internal function to register an asset with initial price
+     * @notice Internal function to register an asset with its price feed
      * @param assetId Asset identifier
-     * @param price Initial price in 1e18 format
+     * @param priceFeedId Pyth price feed identifier
      */
-    function _registerAssetWithPrice(string memory assetId, uint256 price) internal {
-        assetPrices[assetId] = price;
+    function _registerAssetWithPriceFeed(string memory assetId, bytes32 priceFeedId) internal {
+        assetPriceFeedIds[assetId] = priceFeedId;
         registeredAssets.push(assetId);
         isAssetRegistered[assetId] = true;
     }
@@ -124,38 +137,39 @@ contract BasketOracle is Ownable {
     // ============================================================
     
     /**
-     * @notice Register a new asset with initial price
+     * @notice Register a new asset with its price feed
      * @param assetId Asset identifier (e.g., "AAPL", "GOLD")
-     * @param price Initial price in 1e18 format
+     * @param priceFeedId Pyth price feed identifier
      */
-    function registerAsset(string calldata assetId, uint256 price) external onlyOwner {
+    function registerAsset(string calldata assetId, bytes32 priceFeedId) external onlyOwner {
         if (isAssetRegistered[assetId]) revert AssetAlreadyRegistered(assetId);
-        if (price == 0) revert ZeroPrice();
+        if (priceFeedId == bytes32(0)) revert InvalidPriceFeedId(assetId);
         
-        _registerAssetWithPrice(assetId, price);
+        _registerAssetWithPriceFeed(assetId, priceFeedId);
         
-        emit AssetRegistered(assetId, price);
+        emit AssetRegistered(assetId, priceFeedId);
     }
     
     /**
-     * @notice Update the price of an asset
+    /**
+     * @notice Update the price feed of an asset
      * @param assetId Asset identifier
-     * @param newPrice New price in 1e18 format
+     * @param priceFeedId New Pyth price feed identifier
      */
-    function setAssetPrice(string calldata assetId, uint256 newPrice) external onlyOwner {
-        if (newPrice == 0) revert ZeroPrice();
+    function setAssetPriceFeed(string calldata assetId, bytes32 priceFeedId) external onlyOwner {
+        if (priceFeedId == bytes32(0)) revert InvalidPriceFeedId(assetId);
         
-        uint256 oldPrice = assetPrices[assetId];
-        assetPrices[assetId] = newPrice;
+        bytes32 oldPriceFeedId = assetPriceFeedIds[assetId];
+        assetPriceFeedIds[assetId] = priceFeedId;
         
         // Auto-register if not already registered
         if (!isAssetRegistered[assetId]) {
             registeredAssets.push(assetId);
             isAssetRegistered[assetId] = true;
-            emit AssetRegistered(assetId, newPrice);
+            emit AssetRegistered(assetId, priceFeedId);
         }
         
-        emit AssetPriceUpdated(assetId, oldPrice, newPrice);
+        emit AssetPriceFeedUpdated(assetId, oldPriceFeedId, priceFeedId);
     }
     
     /**
@@ -172,29 +186,29 @@ contract BasketOracle is Ownable {
     }
     
     /**
-     * @notice Batch update multiple asset prices
+     * @notice Batch update multiple asset price feeds
      * @param assetIds Array of asset identifiers
-     * @param prices Array of new prices in 1e18 format
+     * @param priceFeedIds Array of Pyth price feed identifiers
      */
-    function batchSetAssetPrices(
+    function batchSetAssetPriceFeeds(
         string[] calldata assetIds,
-        uint256[] calldata prices
+        bytes32[] calldata priceFeedIds
     ) external onlyOwner {
-        require(assetIds.length == prices.length, "Array length mismatch");
+        require(assetIds.length == priceFeedIds.length, "Array length mismatch");
         
         for (uint256 i = 0; i < assetIds.length; i++) {
-            if (prices[i] == 0) revert ZeroPrice();
+            if (priceFeedIds[i] == bytes32(0)) revert InvalidPriceFeedId(assetIds[i]);
             
-            uint256 oldPrice = assetPrices[assetIds[i]];
-            assetPrices[assetIds[i]] = prices[i];
+            bytes32 oldPriceFeedId = assetPriceFeedIds[assetIds[i]];
+            assetPriceFeedIds[assetIds[i]] = priceFeedIds[i];
             
             if (!isAssetRegistered[assetIds[i]]) {
                 registeredAssets.push(assetIds[i]);
                 isAssetRegistered[assetIds[i]] = true;
-                emit AssetRegistered(assetIds[i], prices[i]);
+                emit AssetRegistered(assetIds[i], priceFeedIds[i]);
             }
             
-            emit AssetPriceUpdated(assetIds[i], oldPrice, prices[i]);
+            emit AssetPriceFeedUpdated(assetIds[i], oldPriceFeedId, priceFeedIds[i]);
         }
     }
 
@@ -225,8 +239,7 @@ contract BasketOracle is Ownable {
         uint256 weightedSum = 0;
         
         for (uint256 i = 0; i < assets.length; i++) {
-            uint256 assetPrice = assetPrices[assets[i]];
-            if (assetPrice == 0) revert AssetPriceNotAvailable(assets[i]);
+            uint256 assetPrice = _getAssetPrice(assets[i]);
             
             // Accumulate weighted price
             // assetPrice is in 1e18, weight is in basis points (0-10000)
@@ -243,8 +256,46 @@ contract BasketOracle is Ownable {
      * @return price Asset price in 1e18 USD format
      */
     function getAssetPrice(string calldata assetId) external view returns (uint256 price) {
-        price = assetPrices[assetId];
-        if (price == 0) revert AssetPriceNotAvailable(assetId);
+        price = _getAssetPrice(assetId);
+    }
+
+    /**
+     * @notice Debug helper to inspect raw Pyth data and scaled price
+     * @param assetId Asset identifier
+     * @return scaledPrice Price scaled to 1e18
+     * @return rawPrice Raw Pyth price
+     * @return expo Pyth exponent
+     * @return conf Confidence interval
+     * @return publishTime Oracle publish time
+     */
+    function getAssetPriceDebug(string calldata assetId) external view returns (
+        uint256 scaledPrice,
+        int64 rawPrice,
+        int32 expo,
+        uint64 conf,
+        uint publishTime
+    ) {
+        bytes32 priceFeedId = assetPriceFeedIds[assetId];
+        if (priceFeedId == bytes32(0)) revert AssetPriceNotAvailable(assetId);
+
+        PythStructs.Price memory priceInfo = pyth.getPriceNoOlderThan(priceFeedId, 60);
+        rawPrice = priceInfo.price;
+        expo = priceInfo.expo;
+        conf = priceInfo.conf;
+        publishTime = priceInfo.publishTime;
+
+        if (rawPrice <= 0) revert AssetPriceNotAvailable(assetId);
+
+        int32 power = expo + 18;
+        int256 scaled;
+        if (power >= 0) {
+            scaled = int256(rawPrice) * (int256(10) ** uint256(uint32(power)));
+        } else {
+            scaled = int256(rawPrice) / (int256(10) ** uint256(uint32(-power)));
+        }
+
+        if (scaled <= 0) revert AssetPriceNotAvailable(assetId);
+        scaledPrice = uint256(scaled);
     }
     
     /**
@@ -268,6 +319,32 @@ contract BasketOracle is Ownable {
         if (mntUsdPrice == 0) revert MntPriceNotSet();
         // Inverse of getMntValue
         mntAmount = (usdValue * 1e18) / mntUsdPrice;
+    }
+
+    /**
+     * @notice Calculate the fee required to update Pyth price feeds for given updates
+     * @param priceUpdate Pyth price update data blob(s) fetched off-chain
+     */
+    function getPythUpdateFee(bytes[] calldata priceUpdate) external view returns (uint256) {
+        return pyth.getUpdateFee(priceUpdate);
+    }
+
+    /**
+     * @notice Push fresh Pyth price updates on-chain so subsequent reads succeed
+     * @dev Callers must provide at least the required fee; any excess is refunded.
+     * @param priceUpdate Encoded price update payload(s) from Pyth Hermes
+     * @return feePaid The fee forwarded to Pyth
+     */
+    function updatePriceFeeds(bytes[] calldata priceUpdate) external payable returns (uint256 feePaid) {
+        feePaid = pyth.getUpdateFee(priceUpdate);
+        if (msg.value < feePaid) revert InsufficientUpdateFee(feePaid, msg.value);
+
+        pyth.updatePriceFeeds{value: feePaid}(priceUpdate);
+
+        if (msg.value > feePaid) {
+            (bool ok, ) = payable(msg.sender).call{value: msg.value - feePaid}("");
+            require(ok, "Refund failed");
+        }
     }
 
     // ============================================================
@@ -305,11 +382,43 @@ contract BasketOracle is Ownable {
         (string[] memory assets, ) = basketRegistry.getBasketComposition(basketId);
         
         for (uint256 i = 0; i < assets.length; i++) {
-            if (assetPrices[assets[i]] == 0) {
+            if (assetPriceFeedIds[assets[i]] == bytes32(0)) {
                 return (false, assets[i]);
             }
         }
         
         return (true, "");
+    }
+
+    // ============================================================
+    // ================== INTERNAL VIEW HELPERS ===================
+    // ============================================================
+
+    /**
+     * @notice Resolve a Pyth price feed into a 1e18 scaled USD price
+     * @param assetId Asset identifier
+     * @return price Price scaled to 1e18
+     */
+    function _getAssetPrice(string memory assetId) internal view returns (uint256 price) {
+        bytes32 priceFeedId = assetPriceFeedIds[assetId];
+        if (priceFeedId == bytes32(0)) revert AssetPriceNotAvailable(assetId);
+
+        PythStructs.Price memory priceInfo = pyth.getPriceNoOlderThan(priceFeedId, 60);
+
+        int256 rawPrice = int256(priceInfo.price);
+        int32 expo = priceInfo.expo; // price = rawPrice * 10^expo
+
+        if (rawPrice <= 0) revert AssetPriceNotAvailable(assetId);
+
+        int32 power = expo + 18;
+        int256 scaled;
+        if (power >= 0) {
+            scaled = rawPrice * (int256(10) ** uint256(uint32(power)));
+        } else {
+            scaled = rawPrice / (int256(10) ** uint256(uint32(-power)));
+        }
+
+        if (scaled <= 0) revert AssetPriceNotAvailable(assetId);
+        price = uint256(scaled);
     }
 }

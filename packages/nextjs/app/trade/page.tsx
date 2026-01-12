@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { HermesClient } from "@pythnetwork/hermes-client";
 import type { NextPage } from "next";
 import { formatEther, parseEther } from "viem";
-import { useAccount } from "wagmi";
+import { useAccount, usePublicClient } from "wagmi";
 import {
   ArrowPathIcon,
   ArrowsRightLeftIcon,
@@ -37,6 +38,7 @@ const orderHistory: Order[] = [];
 
 const Trade: NextPage = () => {
   const { address: connectedAddress } = useAccount();
+  const publicClient = usePublicClient();
   const [activeTimeframe, setActiveTimeframe] = useState("4H");
   const [activeTab, setActiveTab] = useState<"buy" | "sell">("buy");
   const [amount, setAmount] = useState("");
@@ -45,6 +47,7 @@ const Trade: NextPage = () => {
   const [liquidityMnt, setLiquidityMnt] = useState("");
   const [liquidityBasket, setLiquidityBasket] = useState("");
   const [isSwapping, setIsSwapping] = useState(false);
+  const [isUpdatingPrices, setIsUpdatingPrices] = useState(false);
 
   // Basket context
   const { selectedBasketId, selectedBasket, refreshPrices } = useBasketContext();
@@ -52,31 +55,40 @@ const Trade: NextPage = () => {
   const { basketSymbol, basketPrice, mntPrice } = useFormattedBasketData();
 
   // Get contract addresses
-  const { data: poolInfo } = useDeployedContractInfo("BasketLiquidityPool");
+  const { data: poolInfo } = useDeployedContractInfo({ contractName: "BasketLiquidityPool" } as any);
+  const { data: basketOracleInfo } = useDeployedContractInfo("BasketOracle");
 
   // Read pool reserves for selected basket using getReserves
   const { data: reservesData } = useScaffoldReadContract({
     contractName: "BasketLiquidityPool",
     functionName: "getReserves",
-  });
+  } as any);
 
   // Read user MNT balance
   const { data: mntBalance, refetch: refetchMntBalance } = useScaffoldReadContract({
     contractName: "MockMNT",
     functionName: "balanceOf",
     args: [connectedAddress as `0x${string}`],
-  });
+  } as any);
 
   // Note: basketTokens mapping can be used for future token-specific approvals
 
   // Write hooks
-  const { writeContractAsync: writePoolAsync } = useScaffoldWriteContract({ contractName: "BasketLiquidityPool" });
-  const { writeContractAsync: writeMntAsync } = useScaffoldWriteContract({ contractName: "MockMNT" });
+  const { writeContractAsync: writePoolAsync } = useScaffoldWriteContract({
+    contractName: "BasketLiquidityPool",
+  } as any) as { writeContractAsync: (...args: any[]) => Promise<any> };
+  const { writeContractAsync: writeMntAsync } = useScaffoldWriteContract({
+    contractName: "MockMNT",
+  } as any) as { writeContractAsync: (...args: any[]) => Promise<any> };
+  const { writeContractAsync: writeOracleAsync } = useScaffoldWriteContract({ contractName: "BasketOracle" });
 
   // Parse values - reservesData returns [mntReserve, basketReserve]
-  const mntReserveNum = reservesData?.[0] ? Number(formatEther(reservesData[0])) : 0;
-  const basketReserveNum = reservesData?.[1] ? Number(formatEther(reservesData[1])) : 0;
-  const userMnt = mntBalance ? Number(formatEther(mntBalance)) : 0;
+  const mntReserve = reservesData?.[0] as unknown as bigint | undefined;
+  const basketReserve = reservesData?.[1] as unknown as bigint | undefined;
+  const normalizedMntBalance = mntBalance as unknown as bigint | undefined;
+  const mntReserveNum = mntReserve ? Number(formatEther(mntReserve)) : 0;
+  const basketReserveNum = basketReserve ? Number(formatEther(basketReserve)) : 0;
+  const userMnt = normalizedMntBalance ? Number(formatEther(normalizedMntBalance)) : 0;
 
   // Calculate estimated output based on oracle price
   const calculateEstimated = (inputAmount: string) => {
@@ -189,6 +201,73 @@ const Trade: NextPage = () => {
     }
   };
 
+  const handleUpdatePythPrices = async () => {
+    if (!selectedBasket?.assets?.length) {
+      notification.error("Select a basket to update its Pyth feeds.");
+      return;
+    }
+    if (!basketOracleInfo?.address || !basketOracleInfo?.abi || !publicClient) {
+      notification.error("BasketOracle details unavailable.");
+      return;
+    }
+
+    try {
+      setIsUpdatingPrices(true);
+      // Fetch feed ids for current basket assets from the oracle
+      const feedIds = await Promise.all(
+        selectedBasket.assets.map(
+          asset =>
+            publicClient.readContract({
+              address: basketOracleInfo.address as `0x${string}`,
+              abi: basketOracleInfo.abi,
+              functionName: "assetPriceFeedIds",
+              args: [asset],
+            }) as Promise<`0x${string}`>,
+        ),
+      );
+
+      const validFeedIds = feedIds.filter(
+        id => id !== "0x0000000000000000000000000000000000000000000000000000000000000000",
+      );
+
+      if (validFeedIds.length === 0) {
+        notification.error("No Pyth feeds configured for this basket.");
+        return;
+      }
+
+      const connection = new HermesClient("https://hermes.pyth.network");
+      const priceUpdates = await connection.getLatestPriceUpdates(validFeedIds, {
+        encoding: "hex",
+        ignoreInvalidPriceIds: true,
+      });
+      const updatePayloads = priceUpdates.binary.data.map(
+        d => (d.startsWith("0x") || d.startsWith("0X") ? d : `0x${d}`) as `0x${string}`,
+      );
+
+      const requiredFee = (await publicClient.readContract({
+        address: basketOracleInfo.address as `0x${string}`,
+        abi: basketOracleInfo.abi,
+        functionName: "getPythUpdateFee",
+        args: [updatePayloads],
+      })) as bigint;
+
+      notification.info("Submitting price update to Pyth...");
+      await writeOracleAsync({
+        functionName: "updatePriceFeeds",
+        args: [updatePayloads],
+        value: requiredFee,
+      });
+
+      notification.success("Pyth price feeds updated");
+      refreshPrices();
+    } catch (error: any) {
+      console.error("Error updating Pyth prices:", error);
+      notification.error(error?.shortMessage || error?.message || "Failed to update Pyth prices");
+    } finally {
+      setIsUpdatingPrices(false);
+    }
+  };
+
   const filteredOrders = orderHistory.filter(
     order =>
       order.basket.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -208,6 +287,13 @@ const Trade: NextPage = () => {
                   <BasketSelector />
                   <button onClick={refreshPrices} className="p-2 hover:bg-white/10 rounded-lg transition-colors">
                     <ArrowPathIcon className="w-5 h-5 text-white/50" />
+                  </button>
+                  <button
+                    onClick={handleUpdatePythPrices}
+                    disabled={isUpdatingPrices || !selectedBasket?.assets?.length}
+                    className="px-3 py-2 rounded-lg border border-white/20 text-white text-sm hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {isUpdatingPrices ? "Updating feeds..." : "Push Pyth Update"}
                   </button>
                 </div>
                 <p className="text-white/50 text-sm">
