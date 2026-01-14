@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import type { NextPage } from "next";
 import { formatEther } from "viem";
-import { useAccount } from "wagmi";
+import { useAccount, useBalance } from "wagmi";
 import {
   ArrowsRightLeftIcon,
   BoltIcon,
@@ -16,6 +16,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { useBasketContext, useFormattedBasketData } from "~~/contexts/BasketContext";
 import { useScaffoldReadContract } from "~~/hooks/scaffold-eth";
+import { formatTokenAmount } from "~~/utils/formatNumber";
 
 /**
  * Dashboard Page - Multi-Basket Portfolio View
@@ -45,14 +46,12 @@ const Dashboard: NextPage = () => {
     hasPosition,
   } = useFormattedBasketData();
 
-  // Get MNT balance
-  const { data: mntBalance } = useScaffoldReadContract({
-    contractName: "MockMNT",
-    functionName: "balanceOf",
-    args: [address as `0x${string}`],
+  // Get native MNT balance using wagmi useBalance
+  const { data: nativeBalance } = useBalance({
+    address: address,
   });
 
-  const userMnt = mntBalance ? Number(formatEther(mntBalance)) : 0;
+  const userMnt = nativeBalance?.value ? Number(formatEther(nativeBalance.value)) : 0;
 
   // Calculate portfolio value
   const collateralValueUSD = collateral * mntPrice;
@@ -112,11 +111,10 @@ const Dashboard: NextPage = () => {
                       <button
                         key={tf}
                         onClick={() => setSelectedTimeframe(tf)}
-                        className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
-                          selectedTimeframe === tf
-                            ? "bg-primary text-white"
-                            : "bg-base-300 text-white/50 hover:text-white/70"
-                        }`}
+                        className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${selectedTimeframe === tf
+                          ? "bg-primary text-white"
+                          : "bg-base-300 text-white/50 hover:text-white/70"
+                          }`}
                       >
                         {tf}
                       </button>
@@ -154,42 +152,39 @@ const Dashboard: NextPage = () => {
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div className="bg-base-300/50 rounded-lg p-4">
                       <p className="text-sm text-white/50 mb-1">Collateral</p>
-                      <p className="text-xl font-bold">{collateral.toFixed(4)} MNT</p>
-                      <p className="text-xs text-white/40">${collateralValueUSD.toFixed(2)}</p>
+                      <p className="text-xl font-bold">{formatTokenAmount(collateral)} MNT</p>
+                      <p className="text-xs text-white/40">${formatTokenAmount(collateralValueUSD, 2, 6)}</p>
                     </div>
                     <div className="bg-base-300/50 rounded-lg p-4">
                       <p className="text-sm text-white/50 mb-1">Debt</p>
                       <p className="text-xl font-bold">
-                        {debt.toFixed(4)} {basketSymbol}
+                        {formatTokenAmount(debt)} {basketSymbol}
                       </p>
-                      <p className="text-xs text-white/40">${debtValueUSD.toFixed(2)}</p>
+                      <p className="text-xs text-white/40">${formatTokenAmount(debtValueUSD, 2, 6)}</p>
                     </div>
                     <div className="bg-base-300/50 rounded-lg p-4">
                       <p className="text-sm text-white/50 mb-1">C-Ratio</p>
                       <p
-                        className={`text-xl font-bold ${
-                          collateralRatio === Infinity
-                            ? "text-white"
-                            : collateralRatio >= 500
-                              ? "text-success"
-                              : collateralRatio >= 150
-                                ? "text-warning"
-                                : "text-error"
-                        }`}
+                        className={`text-xl font-bold ${collateralRatio === Infinity
+                          ? "text-white"
+                          : collateralRatio >= 500
+                            ? "text-success"
+                            : collateralRatio >= 150
+                              ? "text-warning"
+                              : "text-error"
+                          }`}
                       >
                         {collateralRatio === Infinity ? "∞" : `${collateralRatio.toFixed(0)}%`}
                       </p>
                     </div>
                     <div
-                      className={`rounded-lg p-4 ${
-                        isLiquidatable ? "bg-error/20 border border-error/30" : "bg-success/20 border border-success/30"
-                      }`}
+                      className={`rounded-lg p-4 ${isLiquidatable ? "bg-error/20 border border-error/30" : "bg-success/20 border border-success/30"
+                        }`}
                     >
                       <p className="text-sm text-white/50 mb-1">Status</p>
                       <p
-                        className={`text-xl font-bold flex items-center gap-2 ${
-                          isLiquidatable ? "text-error" : "text-success"
-                        }`}
+                        className={`text-xl font-bold flex items-center gap-2 ${isLiquidatable ? "text-error" : "text-success"
+                          }`}
                       >
                         {isLiquidatable ? (
                           <>
@@ -275,15 +270,14 @@ const Dashboard: NextPage = () => {
                         {collateralRatio === Infinity ? "∞" : `${collateralRatio.toFixed(0)}%`}
                       </p>
                       <p
-                        className={`text-sm font-medium ${
-                          collateralRatio === Infinity
-                            ? "text-white/50"
-                            : collateralRatio >= 500
-                              ? "text-success"
-                              : collateralRatio >= 150
-                                ? "text-warning"
-                                : "text-error"
-                        }`}
+                        className={`text-sm font-medium ${collateralRatio === Infinity
+                          ? "text-white/50"
+                          : collateralRatio >= 500
+                            ? "text-success"
+                            : collateralRatio >= 150
+                              ? "text-warning"
+                              : "text-error"
+                          }`}
                       >
                         {!hasPosition
                           ? "No Position"
@@ -301,11 +295,11 @@ const Dashboard: NextPage = () => {
                 <div className="space-y-4">
                   <div className="bg-base-300/50 rounded-lg p-4">
                     <p className="text-sm text-white/50 mb-1">MNT Collateral</p>
-                    <p className="text-2xl font-bold">{collateral.toFixed(4)} MNT</p>
+                    <p className="text-2xl font-bold">{formatTokenAmount(collateral)} MNT</p>
                   </div>
                   <div className="bg-base-300/50 rounded-lg p-4">
                     <p className="text-sm text-white/50 mb-1">Minted {basketSymbol}</p>
-                    <p className="text-2xl font-bold">{debt.toFixed(4)}</p>
+                    <p className="text-2xl font-bold">{formatTokenAmount(debt)}</p>
                   </div>
                   <div className="bg-base-300/50 rounded-lg p-4">
                     <p className="text-sm text-white/50 mb-1">Liquidation Threshold</p>

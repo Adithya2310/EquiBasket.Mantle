@@ -2,8 +2,9 @@
 
 import React, { useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Bars3Icon, CubeIcon } from "@heroicons/react/24/outline";
+import { Bars3Icon } from "@heroicons/react/24/outline";
 import { RainbowKitCustomConnectButton } from "~~/components/scaffold-eth";
 import { useOutsideClick } from "~~/hooks/scaffold-eth";
 
@@ -42,9 +43,8 @@ export const HeaderMenuLinks = () => {
           <li key={href}>
             <Link
               href={href}
-              className={`${
-                isActive ? "text-primary" : "text-white/70"
-              } hover:text-primary transition-colors duration-200 py-2 px-4 text-sm font-medium`}
+              className={`${isActive ? "text-primary" : "text-white/70"
+                } hover:text-primary transition-colors duration-200 py-2 px-4 text-sm font-medium`}
             >
               {label}
             </Link>
@@ -81,8 +81,8 @@ export const Header = () => {
           </ul>
         </details>
         <Link href="/" className="flex items-center gap-3 ml-2 lg:ml-0">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-primary/50 flex items-center justify-center">
-            <CubeIcon className="w-6 h-6 text-white" />
+          <div className="relative w-10 h-10">
+            <Image src="/EquiBlock_Logo.jpeg" alt="EquiBlock Logo" fill className="rounded-lg object-cover" />
           </div>
           <div className="hidden sm:block">
             <span className="font-bold text-xl text-white">EquiBaskets</span>
