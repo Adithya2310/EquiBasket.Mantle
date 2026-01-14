@@ -3,7 +3,7 @@
 import { useState } from "react";
 import type { NextPage } from "next";
 import { formatEther, parseEther } from "viem";
-import { useAccount } from "wagmi";
+import { useAccount, useBalance, useReadContract } from "wagmi";
 import {
   ArrowPathIcon,
   ArrowsRightLeftIcon,
@@ -13,27 +13,34 @@ import {
 } from "@heroicons/react/24/outline";
 import { BasketSelector } from "~~/components/BasketSelector";
 import { useBasketContext, useFormattedBasketData } from "~~/contexts/BasketContext";
-import { useDeployedContractInfo, useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
+import { useScaffoldReadContract } from "~~/hooks/scaffold-eth";
+import { formatTokenAmount } from "~~/utils/formatNumber";
 import { notification } from "~~/utils/scaffold-eth";
+import deployedContracts from "~~/contracts/deployedContracts";
 
 /**
  * Trade Page - Liquidity Pool Integration
  *
- * As per UI Migration document Section 5️⃣:
- * - Chart price: BasketOracle.getBasketPrice()
- * - Buy quote: BasketLiquidityPool.getQuote()
- * - Sell quote: Same
- * - Execute trade: swapMNTForBasket() / swapBasketForMNT()
+ * UPDATED: Now uses basket-specific pools from BasketFactory
+ * - Each basket has its own unique pool deployed by BasketFactory
+ * - Pool address: BasketFactory.basketPools(basketId)
+ * - Token address: BasketFactory.basketTokens(basketId)
  *
  * Notes:
  * - Charts are oracle-driven (not AMM-driven)
  * - Pool pricing must never diverge from oracle price
+ * - Uses NATIVE MNT (msg.value) for swaps
  */
 
 const timeframes = ["1H", "4H", "1D", "1W", "1M"];
 
 type Order = { date: string; basket: string; type: "Buy" | "Sell"; amount: string; price: string };
 const orderHistory: Order[] = [];
+
+// Get the chain ID from deployed contracts and pool ABI
+const chainId = Object.keys(deployedContracts)[0] as unknown as keyof typeof deployedContracts;
+const chainContracts = deployedContracts[chainId] as Record<string, { abi?: readonly unknown[] }> | undefined;
+const poolAbi = chainContracts?.BasketLiquidityPool?.abi || [];
 
 const Trade: NextPage = () => {
   const { address: connectedAddress } = useAccount();
@@ -45,38 +52,56 @@ const Trade: NextPage = () => {
   const [liquidityMnt, setLiquidityMnt] = useState("");
   const [liquidityBasket, setLiquidityBasket] = useState("");
   const [isSwapping, setIsSwapping] = useState(false);
+  const [isAddingLiquidity, setIsAddingLiquidity] = useState(false);
 
   // Basket context
   const { selectedBasketId, selectedBasket, refreshPrices } = useBasketContext();
 
   const { basketSymbol, basketPrice, mntPrice } = useFormattedBasketData();
 
-  // Get contract addresses
-  const { data: poolInfo } = useDeployedContractInfo("BasketLiquidityPool");
+  // ========================================================
+  // Get basket-specific pool and token addresses from factory
+  // ========================================================
 
-  // Read pool reserves for selected basket using getReserves
-  const { data: reservesData } = useScaffoldReadContract({
-    contractName: "BasketLiquidityPool",
+  // Read pool address from BasketFactory
+  const { data: poolAddress } = useScaffoldReadContract({
+    contractName: "BasketFactory",
+    functionName: "basketPools",
+    args: [selectedBasketId ?? 0n],
+  });
+
+  // Read token address from BasketFactory
+  const { data: tokenAddress } = useScaffoldReadContract({
+    contractName: "BasketFactory",
+    functionName: "basketTokens",
+    args: [selectedBasketId ?? 0n],
+  });
+
+  // Check if pool exists for this basket
+  const isPoolAvailable = poolAddress && poolAddress !== "0x0000000000000000000000000000000000000000";
+
+  // ========================================================
+  // Read from dynamic pool address
+  // ========================================================
+
+  // Read pool reserves using dynamic pool address
+  const { data: reservesData, refetch: refetchReserves } = useReadContract({
+    address: poolAddress as `0x${string}`,
+    abi: poolAbi,
     functionName: "getReserves",
+    query: { enabled: !!isPoolAvailable },
   });
 
-  // Read user MNT balance
-  const { data: mntBalance, refetch: refetchMntBalance } = useScaffoldReadContract({
-    contractName: "MockMNT",
-    functionName: "balanceOf",
-    args: [connectedAddress as `0x${string}`],
+  // Read user native MNT balance using wagmi useBalance
+  const { data: nativeBalance, refetch: refetchMntBalance } = useBalance({
+    address: connectedAddress,
   });
-
-  // Note: basketTokens mapping can be used for future token-specific approvals
-
-  // Write hooks
-  const { writeContractAsync: writePoolAsync } = useScaffoldWriteContract({ contractName: "BasketLiquidityPool" });
-  const { writeContractAsync: writeMntAsync } = useScaffoldWriteContract({ contractName: "MockMNT" });
 
   // Parse values - reservesData returns [mntReserve, basketReserve]
-  const mntReserveNum = reservesData?.[0] ? Number(formatEther(reservesData[0])) : 0;
-  const basketReserveNum = reservesData?.[1] ? Number(formatEther(reservesData[1])) : 0;
-  const userMnt = mntBalance ? Number(formatEther(mntBalance)) : 0;
+  const reserves = reservesData as [bigint, bigint] | undefined;
+  const mntReserveNum = reserves?.[0] ? Number(formatEther(reserves[0])) : 0;
+  const basketReserveNum = reserves?.[1] ? Number(formatEther(reserves[1])) : 0;
+  const userMnt = nativeBalance?.value ? Number(formatEther(nativeBalance.value)) : 0;
 
   // Calculate estimated output based on oracle price
   const calculateEstimated = (inputAmount: string) => {
@@ -109,46 +134,84 @@ const Trade: NextPage = () => {
     }
   };
 
-  // Handle swap
+  // Handle swap - uses native MNT for buy, basket tokens for sell
   const handleSwap = async () => {
-    if (!amount || isSwapping || !poolInfo?.address || !selectedBasketId) return;
+    if (!amount || isSwapping || !poolAddress || !selectedBasketId || !isPoolAvailable) return;
 
     try {
       setIsSwapping(true);
 
+      const { writeContract, waitForTransactionReceipt } = await import("wagmi/actions");
+      const config = await import("~~/services/web3/wagmiConfig").then(m => m.wagmiConfig);
+
       if (activeTab === "buy") {
-        // Swap MNT for Basket Tokens
+        // Swap native MNT for Basket Tokens
         const mntAmount = parseEther(amount);
 
-        notification.info("Approving MNT...");
-        await writeMntAsync({
-          functionName: "approve",
-          args: [poolInfo.address, mntAmount],
+        notification.info("Executing swap...");
+        const hash = await writeContract(config, {
+          address: poolAddress as `0x${string}`,
+          abi: poolAbi,
+          functionName: "swapMntForBasket",
+          value: mntAmount,
         });
 
-        notification.info("Executing swap...");
-        await writePoolAsync({
-          functionName: "swapMntForBasket",
-          args: [mntAmount],
-        });
+        // Wait for transaction confirmation
+        notification.info("Waiting for confirmation...");
+        await waitForTransactionReceipt(config, { hash });
 
         notification.success(`Successfully bought ${basketSymbol}!`);
       } else {
-        // Swap Basket Tokens for MNT
+        // Swap Basket Tokens for native MNT
         const basketAmount = parseEther(amount);
 
-        // Note: Need to approve basket token first
+        // Step 1: Approve basket tokens to pool
+        if (!tokenAddress) {
+          notification.error("Token address not found");
+          return;
+        }
+
+        notification.info("Approving tokens...");
+        const approveHash = await writeContract(config, {
+          address: tokenAddress as `0x${string}`,
+          abi: [
+            {
+              name: "approve",
+              type: "function",
+              stateMutability: "nonpayable",
+              inputs: [
+                { name: "spender", type: "address" },
+                { name: "amount", type: "uint256" },
+              ],
+              outputs: [{ type: "bool" }],
+            },
+          ],
+          functionName: "approve",
+          args: [poolAddress, basketAmount],
+        });
+        await waitForTransactionReceipt(config, { hash: approveHash });
+
+        // Step 2: Execute swap
         notification.info("Executing swap...");
-        await writePoolAsync({
+        const swapHash = await writeContract(config, {
+          address: poolAddress as `0x${string}`,
+          abi: poolAbi,
           functionName: "swapBasketForMnt",
           args: [basketAmount],
         });
+
+        // Wait for transaction confirmation
+        notification.info("Waiting for confirmation...");
+        await waitForTransactionReceipt(config, { hash: swapHash });
 
         notification.success(`Successfully sold ${basketSymbol}!`);
       }
 
       setAmount("");
-      refetchMntBalance();
+
+      // Refetch balances after transaction is confirmed
+      await refetchMntBalance();
+      await refetchReserves();
       refreshPrices();
     } catch (error: any) {
       console.error("Error swapping:", error);
@@ -158,24 +221,50 @@ const Trade: NextPage = () => {
     }
   };
 
-  // Handle add liquidity
+  // Handle add liquidity - uses native MNT via msg.value
   const handleAddLiquidity = async () => {
-    if (!liquidityMnt || !liquidityBasket || !poolInfo?.address || !selectedBasketId) return;
+    if (!liquidityMnt || !liquidityBasket || !poolAddress || !selectedBasketId || !isPoolAvailable) return;
+    if (!tokenAddress) {
+      notification.error("Basket token address not found");
+      return;
+    }
 
     try {
+      setIsAddingLiquidity(true);
       const mntAmount = parseEther(liquidityMnt);
       const basketAmount = parseEther(liquidityBasket);
 
-      notification.info("Approving MNT...");
-      await writeMntAsync({
+      const { writeContract } = await import("wagmi/actions");
+      const config = await import("~~/services/web3/wagmiConfig").then(m => m.wagmiConfig);
+
+      // Step 1: Approve basket tokens to pool
+      notification.info("Approving basket tokens...");
+      await writeContract(config, {
+        address: tokenAddress as `0x${string}`,
+        abi: [
+          {
+            name: "approve",
+            type: "function",
+            stateMutability: "nonpayable",
+            inputs: [
+              { name: "spender", type: "address" },
+              { name: "amount", type: "uint256" },
+            ],
+            outputs: [{ type: "bool" }],
+          },
+        ],
         functionName: "approve",
-        args: [poolInfo.address, mntAmount],
+        args: [poolAddress, basketAmount],
       });
 
+      // Step 2: Add liquidity
       notification.info("Adding liquidity...");
-      await writePoolAsync({
+      await writeContract(config, {
+        address: poolAddress as `0x${string}`,
+        abi: poolAbi,
         functionName: "addLiquidity",
-        args: [mntAmount, basketAmount],
+        args: [basketAmount],
+        value: mntAmount,
       });
 
       notification.success("Liquidity added successfully!");
@@ -183,9 +272,12 @@ const Trade: NextPage = () => {
       setLiquidityMnt("");
       setLiquidityBasket("");
       refetchMntBalance();
+      refetchReserves();
     } catch (error: any) {
       console.error("Error adding liquidity:", error);
       notification.error(error?.message || "Failed to add liquidity");
+    } finally {
+      setIsAddingLiquidity(false);
     }
   };
 
@@ -206,7 +298,7 @@ const Trade: NextPage = () => {
               <div className="flex-1">
                 <div className="flex items-center gap-4 mb-2">
                   <BasketSelector />
-                  <button onClick={refreshPrices} className="p-2 hover:bg-white/10 rounded-lg transition-colors">
+                  <button onClick={() => { refreshPrices(); refetchReserves(); }} className="p-2 hover:bg-white/10 rounded-lg transition-colors">
                     <ArrowPathIcon className="w-5 h-5 text-white/50" />
                   </button>
                 </div>
@@ -218,11 +310,28 @@ const Trade: NextPage = () => {
                 <p className="text-4xl font-bold mb-1">${basketPrice.toFixed(2)}</p>
                 <p className="text-sm text-white/50">Oracle Price</p>
               </div>
-              <button onClick={() => setShowLiquidityModal(true)} className="btn btn-primary gap-2 flex items-center">
+              <button
+                onClick={() => setShowLiquidityModal(true)}
+                disabled={!isPoolAvailable}
+                className="btn btn-primary gap-2 flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
+              >
                 <PlusIcon className="w-5 h-5" />
                 Add Liquidity
               </button>
             </div>
+
+            {/* Pool Not Available Warning */}
+            {!isPoolAvailable && selectedBasketId && (
+              <div className="mt-4 p-4 bg-warning/10 border border-warning/30 rounded-lg flex items-start gap-3">
+                <ExclamationTriangleIcon className="w-6 h-6 text-warning flex-shrink-0" />
+                <div>
+                  <p className="text-sm text-warning font-medium">No Liquidity Pool for this Basket</p>
+                  <p className="text-xs text-white/50 mt-1">
+                    This basket doesn&apos;t have a liquidity pool yet. A pool is created when the basket is created via BasketFactory.
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* Pool Stats */}
             <div className="grid grid-cols-3 gap-4 mt-6 pt-6 border-t border-white/10">
@@ -255,11 +364,10 @@ const Trade: NextPage = () => {
                     <button
                       key={tf}
                       onClick={() => setActiveTimeframe(tf)}
-                      className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                        activeTimeframe === tf
-                          ? "bg-primary text-white"
-                          : "bg-base-300 text-white/50 hover:text-white/70"
-                      }`}
+                      className={`px-4 py-2 rounded-lg font-medium transition-colors ${activeTimeframe === tf
+                        ? "bg-primary text-white"
+                        : "bg-base-300 text-white/50 hover:text-white/70"
+                        }`}
                     >
                       {tf}
                     </button>
@@ -304,17 +412,15 @@ const Trade: NextPage = () => {
                 <div className="grid grid-cols-2 gap-2 mb-6">
                   <button
                     onClick={() => setActiveTab("buy")}
-                    className={`py-3 rounded-lg font-semibold transition-colors ${
-                      activeTab === "buy" ? "bg-success text-white" : "bg-base-300 text-white/50 hover:text-white/70"
-                    }`}
+                    className={`py-3 rounded-lg font-semibold transition-colors ${activeTab === "buy" ? "bg-success text-white" : "bg-base-300 text-white/50 hover:text-white/70"
+                      }`}
                   >
                     Buy
                   </button>
                   <button
                     onClick={() => setActiveTab("sell")}
-                    className={`py-3 rounded-lg font-semibold transition-colors ${
-                      activeTab === "sell" ? "bg-error text-white" : "bg-base-300 text-white/50 hover:text-white/70"
-                    }`}
+                    className={`py-3 rounded-lg font-semibold transition-colors ${activeTab === "sell" ? "bg-error text-white" : "bg-base-300 text-white/50 hover:text-white/70"
+                      }`}
                   >
                     Sell
                   </button>
@@ -337,7 +443,7 @@ const Trade: NextPage = () => {
                       {activeTab === "buy" ? "MNT" : basketSymbol}
                     </span>
                   </div>
-                  <p className="text-xs text-white/50 mt-2">Available: {userMnt.toFixed(4)} MNT</p>
+                  <p className="text-xs text-white/50 mt-2">Available: {formatTokenAmount(userMnt)} MNT</p>
                 </div>
 
                 {/* Swap Icon */}
@@ -383,14 +489,17 @@ const Trade: NextPage = () => {
                 {/* Action Button */}
                 <button
                   onClick={handleSwap}
-                  disabled={!amount || !hasEnoughLiquidity() || isSwapping || !selectedBasketId}
-                  className={`w-full py-4 rounded-lg font-semibold text-white text-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
-                    activeTab === "buy"
-                      ? "bg-success hover:bg-success/90 shadow-lg shadow-success/30"
-                      : "bg-error hover:bg-error/90 shadow-lg shadow-error/30"
-                  }`}
+                  disabled={!isPoolAvailable || !amount || !hasEnoughLiquidity() || isSwapping || !selectedBasketId}
+                  className={`w-full py-4 rounded-lg font-semibold text-white text-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed ${activeTab === "buy"
+                    ? "bg-success hover:bg-success/90 shadow-lg shadow-success/30"
+                    : "bg-error hover:bg-error/90 shadow-lg shadow-error/30"
+                    }`}
                 >
-                  {isSwapping ? "Processing..." : `${activeTab === "buy" ? "Buy" : "Sell"} ${basketSymbol}`}
+                  {!isPoolAvailable
+                    ? "Pool Not Available"
+                    : isSwapping
+                      ? "Processing..."
+                      : `${activeTab === "buy" ? "Buy" : "Sell"} ${basketSymbol}`}
                 </button>
               </div>
             </div>
@@ -437,9 +546,8 @@ const Trade: NextPage = () => {
                         <td className="py-4 px-4 font-semibold">{order.basket}</td>
                         <td className="py-4 px-4">
                           <span
-                            className={`px-3 py-1 rounded-full text-sm font-medium ${
-                              order.type === "Buy" ? "bg-success/20 text-success" : "bg-error/20 text-error"
-                            }`}
+                            className={`px-3 py-1 rounded-full text-sm font-medium ${order.type === "Buy" ? "bg-success/20 text-success" : "bg-error/20 text-error"
+                              }`}
                           >
                             {order.type}
                           </span>
@@ -471,7 +579,7 @@ const Trade: NextPage = () => {
                       placeholder="0.00"
                       className="w-full bg-base-300 border border-white/20 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors"
                     />
-                    <p className="text-xs text-white/50 mt-1">Available: {userMnt.toFixed(4)} MNT</p>
+                    <p className="text-xs text-white/50 mt-1">Available: {formatTokenAmount(userMnt)} MNT</p>
                   </div>
 
                   <div>
@@ -506,10 +614,10 @@ const Trade: NextPage = () => {
                   </button>
                   <button
                     onClick={handleAddLiquidity}
-                    disabled={!liquidityMnt || !liquidityBasket}
+                    disabled={!liquidityMnt || !liquidityBasket || isAddingLiquidity}
                     className="flex-1 py-3 rounded-lg font-semibold bg-primary text-white hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Add Liquidity
+                    {isAddingLiquidity ? "Processing..." : "Add Liquidity"}
                   </button>
                 </div>
               </div>
