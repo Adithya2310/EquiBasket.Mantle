@@ -68,7 +68,9 @@ describe("BasketFactory with Native MNT", function () {
         const BasketFactory = await ethers.getContractFactory("BasketFactory");
         basketFactory = await BasketFactory.deploy(
             await basketRegistry.getAddress(),
-            await basketVault.getAddress()
+            await basketOracle.getAddress(),
+            await basketVault.getAddress(),
+            30n // 0.30% default swap fee
         );
         await basketFactory.waitForDeployment();
 
@@ -203,7 +205,9 @@ describe("BasketFactory with Native MNT", function () {
             const BasketFactory = await ethers.getContractFactory("BasketFactory");
             const newFactory = await BasketFactory.deploy(
                 await basketRegistry.getAddress(),
-                ethers.ZeroAddress
+                await basketOracle.getAddress(),
+                ethers.ZeroAddress,
+                30n
             );
 
             await expect(
@@ -214,6 +218,96 @@ describe("BasketFactory with Native MNT", function () {
                     "eTECH"
                 )
             ).to.be.revertedWithCustomError(newFactory, "VaultNotSet");
+        });
+
+        it("Should deploy liquidity pool automatically", async function () {
+            await basketFactory.connect(fundCreator).createBasketWithToken(
+                TECH_BASKET_ASSETS,
+                TECH_BASKET_WEIGHTS,
+                "Tech Giants",
+                "eTECH"
+            );
+
+            const poolAddress = await basketFactory.basketPools(1n);
+            expect(poolAddress).to.not.equal(ethers.ZeroAddress);
+        });
+
+        it("Should deploy pool with correct parameters", async function () {
+            await basketFactory.connect(fundCreator).createBasketWithToken(
+                TECH_BASKET_ASSETS,
+                TECH_BASKET_WEIGHTS,
+                "Tech Giants",
+                "eTECH"
+            );
+
+            const tokenAddress = await basketFactory.basketTokens(1n);
+            const poolAddress = await basketFactory.basketPools(1n);
+            const pool = await ethers.getContractAt("BasketLiquidityPool", poolAddress);
+
+            expect(await pool.basketToken()).to.equal(tokenAddress);
+            expect(await pool.oracle()).to.equal(await basketOracle.getAddress());
+            expect(await pool.basketId()).to.equal(1n);
+            expect(await pool.swapFeeBps()).to.equal(30n);
+        });
+
+        it("Should transfer pool ownership to creator", async function () {
+            await basketFactory.connect(fundCreator).createBasketWithToken(
+                TECH_BASKET_ASSETS,
+                TECH_BASKET_WEIGHTS,
+                "Tech Giants",
+                "eTECH"
+            );
+
+            const poolAddress = await basketFactory.basketPools(1n);
+            const pool = await ethers.getContractAt("BasketLiquidityPool", poolAddress);
+
+            expect(await pool.owner()).to.equal(fundCreatorAddr);
+        });
+
+        it("Should emit event with pool address", async function () {
+            const tx = await basketFactory.connect(fundCreator).createBasketWithToken(
+                TECH_BASKET_ASSETS,
+                TECH_BASKET_WEIGHTS,
+                "Tech Giants",
+                "eTECH"
+            );
+
+            const receipt = await tx.wait();
+            const factoryInterface = basketFactory.interface;
+            const event = receipt?.logs
+                .map((log: any) => {
+                    try {
+                        return factoryInterface.parseLog({ topics: log.topics as string[], data: log.data });
+                    } catch {
+                        return null;
+                    }
+                })
+                .find((e: any) => e?.name === "BasketCreatedWithToken");
+
+            expect(event?.args?.poolAddress).to.not.equal(ethers.ZeroAddress);
+        });
+
+        it("Should create unique pools for each basket", async function () {
+            await basketFactory.connect(fundCreator).createBasketWithToken(
+                TECH_BASKET_ASSETS,
+                TECH_BASKET_WEIGHTS,
+                "Tech Giants",
+                "eTECH"
+            );
+
+            await basketFactory.connect(user1).createBasketWithToken(
+                COMMODITY_BASKET_ASSETS,
+                COMMODITY_BASKET_WEIGHTS,
+                "Precious Metals",
+                "eMETAL"
+            );
+
+            const pool1 = await basketFactory.basketPools(1n);
+            const pool2 = await basketFactory.basketPools(2n);
+
+            expect(pool1).to.not.equal(ethers.ZeroAddress);
+            expect(pool2).to.not.equal(ethers.ZeroAddress);
+            expect(pool1).to.not.equal(pool2);
         });
     });
 
