@@ -39,7 +39,7 @@ const orderHistory: Order[] = [];
 
 // Get the chain ID from deployed contracts and pool ABI
 const chainId = Object.keys(deployedContracts)[0] as unknown as keyof typeof deployedContracts;
-const chainContracts = deployedContracts[chainId] as Record<string, { abi?: readonly unknown[] }> | undefined;
+const chainContracts = deployedContracts[chainId] as any;
 const poolAbi = chainContracts?.BasketLiquidityPool?.abi || [];
 
 const Trade: NextPage = () => {
@@ -153,6 +153,7 @@ const Trade: NextPage = () => {
           address: poolAddress as `0x${string}`,
           abi: poolAbi,
           functionName: "swapMntForBasket",
+          args: [],
           value: mntAmount,
         });
 
