@@ -5,6 +5,7 @@ import { useDisplayUsdMode } from "~~/hooks/scaffold-eth/useDisplayUsdMode";
 import { useTargetNetwork } from "~~/hooks/scaffold-eth/useTargetNetwork";
 import { useWatchBalance } from "~~/hooks/scaffold-eth/useWatchBalance";
 import { useGlobalState } from "~~/services/store/store";
+import { formatTokenAmount } from "~~/utils/formatNumber";
 
 type BalanceProps = {
   address?: Address;
@@ -65,7 +66,7 @@ export const Balance = ({ address, className = "", usdMode }: BalanceProps) => {
           </>
         ) : (
           <>
-            <span>{formattedBalance.toFixed(4)}</span>
+            <span>{formatTokenAmount(formattedBalance)}</span>
             <span className="text-[0.8em] font-bold ml-1">{targetNetwork.nativeCurrency.symbol}</span>
           </>
         )}

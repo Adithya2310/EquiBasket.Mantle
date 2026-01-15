@@ -8,6 +8,7 @@ import { ArrowPathIcon, FireIcon, PlusCircleIcon } from "@heroicons/react/24/out
 import { BasketSelector } from "~~/components/BasketSelector";
 import { useBasketContext, useFormattedBasketData } from "~~/contexts/BasketContext";
 import { useDeployedContractInfo, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
+import { formatTokenAmount } from "~~/utils/formatNumber";
 import { notification } from "~~/utils/scaffold-eth";
 
 /**
@@ -123,14 +124,18 @@ const MintBurn: NextPage = () => {
       const collateralWei = parseEther(collateralRequired);
 
       // Step 1: Deposit native MNT as collateral (via msg.value)
+      // IMPORTANT: Wait for 1 block confirmation before minting to ensure collateral is recorded
       notification.info("Step 1/2: Depositing native MNT collateral...");
-      await writeVaultAsync({
-        functionName: "depositCollateral",
-        args: [selectedBasketId],
-        value: collateralWei, // Send native MNT
-      });
+      await writeVaultAsync(
+        {
+          functionName: "depositCollateral",
+          args: [selectedBasketId],
+          value: collateralWei, // Send native MNT
+        },
+        { blockConfirmations: 1 }, // Wait for transaction to be mined
+      );
 
-      // Step 2: Mint basket tokens
+      // Step 2: Mint basket tokens (now collateral should be on-chain)
       notification.info("Step 2/2: Minting basket tokens...");
       await writeVaultAsync({
         functionName: "mintBasket",
@@ -195,7 +200,7 @@ const MintBurn: NextPage = () => {
   };
 
   // Format balances (using native MNT balance from wagmi useBalance)
-  const userMntBalance = nativeBalance?.value ? Number(formatEther(nativeBalance.value)).toFixed(4) : "0";
+  const userMntBalance = nativeBalance?.value ? formatTokenAmount(Number(formatEther(nativeBalance.value))) : "0";
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-black via-base-200 to-black py-12">
@@ -375,7 +380,7 @@ const MintBurn: NextPage = () => {
                           </span>
                         </div>
                         <p className="text-xs text-white/50 mt-2">
-                          Current Debt: {debt.toFixed(4)} {basketSymbol}
+                          Current Debt: {formatTokenAmount(debt)} {basketSymbol}
                         </p>
                       </div>
 
@@ -415,24 +420,24 @@ const MintBurn: NextPage = () => {
                     <div>
                       <p className="text-sm text-white/50 mb-2">Total Collateral</p>
                       <p className="text-3xl font-bold">
-                        {collateral.toFixed(4)} <span className="text-lg text-white/50">MNT</span>
+                        {formatTokenAmount(collateral)} <span className="text-lg text-white/50">MNT</span>
                       </p>
-                      <p className="text-xs text-white/40">≈ ${(collateral * mntPrice).toFixed(2)} USD</p>
+                      <p className="text-xs text-white/40">≈ ${formatTokenAmount(collateral * mntPrice, 2, 6)} USD</p>
                     </div>
 
                     <div>
                       <p className="text-sm text-white/50 mb-2">Minted {basketSymbol}</p>
                       <p className="text-3xl font-bold">
-                        {debt.toFixed(4)} <span className="text-lg text-white/50">{basketSymbol}</span>
+                        {formatTokenAmount(debt)} <span className="text-lg text-white/50">{basketSymbol}</span>
                       </p>
-                      <p className="text-xs text-white/40">≈ ${(debt * basketPrice).toFixed(2)} USD</p>
+                      <p className="text-xs text-white/40">≈ ${formatTokenAmount(debt * basketPrice, 2, 6)} USD</p>
                     </div>
 
                     <div className="pt-4 border-t border-white/10">
                       <div className="flex justify-between items-center mb-3">
                         <p className="text-sm text-white/50">Current C-Ratio</p>
                         <p
-                          className={`text - 2xl font - bold ${
+                          className={`text-2xl font-bold ${
                             collateralRatio === Infinity
                               ? "text-white"
                               : collateralRatio >= 500
@@ -440,9 +445,9 @@ const MintBurn: NextPage = () => {
                                 : collateralRatio >= 150
                                   ? "text-warning"
                                   : "text-error"
-                          } `}
+                          }`}
                         >
-                          {collateralRatio === Infinity ? "∞" : `${collateralRatio.toFixed(2)}% `}
+                          {collateralRatio === Infinity ? "∞" : `${collateralRatio.toFixed(2)}%`}
                         </p>
                       </div>
 

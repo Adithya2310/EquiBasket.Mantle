@@ -7,7 +7,7 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 const deployedContracts = {
   5003: {
     BasketFactory: {
-      address: "0x2F17fcff4B6b4083741f374A777D25610f632191",
+      address: "0x98D18E6712d7aa15E726bB41A1A2F5B2A70FdcCd",
       abi: [
         {
           inputs: [
@@ -18,12 +18,27 @@ const deployedContracts = {
             },
             {
               internalType: "address",
+              name: "_basketOracle",
+              type: "address",
+            },
+            {
+              internalType: "address",
               name: "_basketVault",
               type: "address",
+            },
+            {
+              internalType: "uint256",
+              name: "_defaultSwapFeeBps",
+              type: "uint256",
             },
           ],
           stateMutability: "nonpayable",
           type: "constructor",
+        },
+        {
+          inputs: [],
+          name: "FeeTooHigh",
+          type: "error",
         },
         {
           inputs: [
@@ -80,6 +95,12 @@ const deployedContracts = {
             },
             {
               indexed: false,
+              internalType: "address",
+              name: "poolAddress",
+              type: "address",
+            },
+            {
+              indexed: false,
               internalType: "string",
               name: "name",
               type: "string",
@@ -92,6 +113,25 @@ const deployedContracts = {
             },
           ],
           name: "BasketCreatedWithToken",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "oldFee",
+              type: "uint256",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "newFee",
+              type: "uint256",
+            },
+          ],
+          name: "DefaultSwapFeeUpdated",
           type: "event",
         },
         {
@@ -131,6 +171,38 @@ const deployedContracts = {
           ],
           name: "VaultUpdated",
           type: "event",
+        },
+        {
+          inputs: [],
+          name: "basketOracle",
+          outputs: [
+            {
+              internalType: "contract BasketOracle",
+              name: "",
+              type: "address",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          name: "basketPools",
+          outputs: [
+            {
+              internalType: "address",
+              name: "",
+              type: "address",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
         },
         {
           inputs: [],
@@ -212,8 +284,45 @@ const deployedContracts = {
               name: "tokenAddress",
               type: "address",
             },
+            {
+              internalType: "address",
+              name: "poolAddress",
+              type: "address",
+            },
           ],
           stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "defaultSwapFeeBps",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "basketId",
+              type: "uint256",
+            },
+          ],
+          name: "getBasketPool",
+          outputs: [
+            {
+              internalType: "address",
+              name: "",
+              type: "address",
+            },
+          ],
+          stateMutability: "view",
           type: "function",
         },
         {
@@ -258,6 +367,19 @@ const deployedContracts = {
         {
           inputs: [
             {
+              internalType: "uint256",
+              name: "_newFeeBps",
+              type: "uint256",
+            },
+          ],
+          name: "setDefaultSwapFee",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
               internalType: "address",
               name: "_vault",
               type: "address",
@@ -287,10 +409,10 @@ const deployedContracts = {
         renounceOwnership: "@openzeppelin/contracts/access/Ownable.sol",
         transferOwnership: "@openzeppelin/contracts/access/Ownable.sol",
       },
-      deployedOnBlock: 33322888,
+      deployedOnBlock: 33454672,
     },
     BasketOracle: {
-      address: "0x5Ae0d275185A6388b3485Ba439FC5FD387778dec",
+      address: "0x1fC45b7FFd83612e2dC4B0a43069a472ea4D6228",
       abi: [
         {
           inputs: [
@@ -876,10 +998,10 @@ const deployedContracts = {
         renounceOwnership: "@openzeppelin/contracts/access/Ownable.sol",
         transferOwnership: "@openzeppelin/contracts/access/Ownable.sol",
       },
-      deployedOnBlock: 33322880,
+      deployedOnBlock: 33454664,
     },
     BasketRegistry: {
-      address: "0x3C3d0E397065839e9d01a90bE04d01632062356C",
+      address: "0x20BB2aBA613Fe2081b8AA6adBc9b96273f5447E7",
       abi: [
         {
           inputs: [],
@@ -1281,10 +1403,10 @@ const deployedContracts = {
         renounceOwnership: "@openzeppelin/contracts/access/Ownable.sol",
         transferOwnership: "@openzeppelin/contracts/access/Ownable.sol",
       },
-      deployedOnBlock: 33246507,
+      deployedOnBlock: 33454660,
     },
     BasketVault: {
-      address: "0xF43Ac9b9b768c3080559e52D0d33FA0234D9C686",
+      address: "0xFbA98a9990122936ADAc80E248f0e302e118F8E8",
       abi: [
         {
           inputs: [
@@ -2118,7 +2240,7 @@ const deployedContracts = {
         renounceOwnership: "@openzeppelin/contracts/access/Ownable.sol",
         transferOwnership: "@openzeppelin/contracts/access/Ownable.sol",
       },
-      deployedOnBlock: 33322885,
+      deployedOnBlock: 33454668,
     },
   },
   11155111: {

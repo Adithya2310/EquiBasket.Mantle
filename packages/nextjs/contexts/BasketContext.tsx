@@ -139,7 +139,7 @@ export const BasketProvider: React.FC<BasketProviderProps> = ({ children }) => {
   });
 
   // Read selected basket data
-  const { data: selectedBasketData, refetch: refetchSelectedBasket } = useScaffoldReadContract({
+  const { data: selectedBasketData } = useScaffoldReadContract({
     contractName: "BasketRegistry",
     functionName: "getBasket",
     args: [selectedBasketId ?? 0n],
@@ -250,10 +250,12 @@ export const useFormattedBasketData = () => {
   const formattedDebt = userPosition ? Number(formatEther(userPosition.debt)) : 0;
 
   // CR is returned as 1e18 scaled (e.g., 5e18 = 500%)
-  const formattedCR =
-    userPosition && userPosition.collateralRatio !== BigInt(2 ** 256 - 1)
-      ? Number(userPosition.collateralRatio) / 1e16 // Convert to percentage
-      : Infinity;
+  // When debt is 0, contract returns type(uint256).max = 2^256-1
+  // Use BigInt literal to avoid precision loss
+  const MAX_UINT256 = 2n ** 256n - 1n;
+  const isMaxRatio = userPosition?.collateralRatio === MAX_UINT256;
+
+  const formattedCR = !userPosition || isMaxRatio ? Infinity : Number(userPosition.collateralRatio) / 1e16; // Convert to percentage
 
   return {
     basketName: selectedBasket?.name ?? "Select a Basket",

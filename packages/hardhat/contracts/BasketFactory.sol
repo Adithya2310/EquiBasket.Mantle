@@ -4,7 +4,9 @@ pragma solidity ^0.8.20;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./BasketRegistry.sol";
 import "./BasketVault.sol";
+import "./BasketOracle.sol";
 import "./EquiBasketToken.sol";
+import "./BasketLiquidityPool.sol";
 
 /**
  * @title BasketFactory
@@ -26,11 +28,20 @@ contract BasketFactory is Ownable {
     /// @notice Reference to the BasketRegistry
     BasketRegistry public immutable basketRegistry;
     
+    /// @notice Reference to the BasketOracle
+    BasketOracle public immutable basketOracle;
+    
     /// @notice Reference to the BasketVault
     BasketVault public basketVault;
     
+    /// @notice Default swap fee for new pools in basis points (e.g., 30 = 0.30%)
+    uint256 public defaultSwapFeeBps;
+    
     /// @notice Mapping from basketId to its token address
     mapping(uint256 => address) public basketTokens;
+    
+    /// @notice Mapping from basketId to its liquidity pool address
+    mapping(uint256 => address) public basketPools;
     
     // ============================================================
     // ========================= EVENTS ===========================
@@ -40,11 +51,14 @@ contract BasketFactory is Ownable {
         uint256 indexed basketId,
         address indexed creator,
         address tokenAddress,
+        address poolAddress,
         string name,
         string symbol
     );
     
     event VaultUpdated(address indexed oldVault, address indexed newVault);
+    
+    event DefaultSwapFeeUpdated(uint256 oldFee, uint256 newFee);
     
     // ============================================================
     // ========================= ERRORS ===========================
@@ -52,6 +66,7 @@ contract BasketFactory is Ownable {
     
     error VaultNotSet();
     error ZeroAddress();
+    error FeeTooHigh();
     
     // ============================================================
     // ====================== CONSTRUCTOR =========================
@@ -60,15 +75,23 @@ contract BasketFactory is Ownable {
     /**
      * @notice Deploy the factory with required dependencies
      * @param _basketRegistry Address of the BasketRegistry
+     * @param _basketOracle Address of the BasketOracle
      * @param _basketVault Address of the BasketVault (can be set later)
+     * @param _defaultSwapFeeBps Default swap fee for pools in basis points (max 1000 = 10%)
      */
     constructor(
         address _basketRegistry,
-        address _basketVault
+        address _basketOracle,
+        address _basketVault,
+        uint256 _defaultSwapFeeBps
     ) Ownable(msg.sender) {
         if (_basketRegistry == address(0)) revert ZeroAddress();
+        if (_basketOracle == address(0)) revert ZeroAddress();
+        if (_defaultSwapFeeBps > 1000) revert FeeTooHigh();
         
         basketRegistry = BasketRegistry(_basketRegistry);
+        basketOracle = BasketOracle(_basketOracle);
+        defaultSwapFeeBps = _defaultSwapFeeBps;
         
         if (_basketVault != address(0)) {
             basketVault = BasketVault(payable(_basketVault));
@@ -92,17 +115,32 @@ contract BasketFactory is Ownable {
         emit VaultUpdated(oldVault, _vault);
     }
     
+    /**
+     * @notice Set the default swap fee for new pools
+     * @param _newFeeBps New fee in basis points (max 1000 = 10%)
+     */
+    function setDefaultSwapFee(uint256 _newFeeBps) external onlyOwner {
+        if (_newFeeBps > 1000) revert FeeTooHigh();
+        
+        uint256 oldFee = defaultSwapFeeBps;
+        defaultSwapFeeBps = _newFeeBps;
+        
+        emit DefaultSwapFeeUpdated(oldFee, _newFeeBps);
+    }
+    
     // ============================================================
     // ================= FACTORY FUNCTIONS ========================
     // ============================================================
     
     /**
-     * @notice Create a complete basket with token in a single transaction
+     * @notice Create a complete basket with token and liquidity pool in a single transaction
      * @dev This function:
      *      1. Creates the basket in registry
      *      2. Deploys a new EquiBasketToken
      *      3. Sets vault as the token minter
      *      4. Registers token in vault
+     *      5. Deploys a BasketLiquidityPool for the token
+     *      6. Transfers ownership of token and pool to creator
      * 
      * @param assets Array of asset identifiers (e.g., ["AAPL", "NVDA"])
      * @param weights Array of weights in basis points (must sum to 10000)
@@ -110,13 +148,14 @@ contract BasketFactory is Ownable {
      * @param symbol Token symbol for the basket
      * @return basketId The unique ID assigned to the new basket
      * @return tokenAddress The address of the deployed EquiBasketToken
+     * @return poolAddress The address of the deployed BasketLiquidityPool
      */
     function createBasketWithToken(
         string[] calldata assets,
         uint256[] calldata weights,
         string calldata name,
         string calldata symbol
-    ) external returns (uint256 basketId, address tokenAddress) {
+    ) external returns (uint256 basketId, address tokenAddress, address poolAddress) {
         if (address(basketVault) == address(0)) revert VaultNotSet();
         
         // Step 1: Create basket in registry
@@ -140,10 +179,23 @@ contract BasketFactory is Ownable {
         // Step 4: Register token in vault
         basketVault.registerBasketToken(basketId, tokenAddress);
         
-        // Step 5: Transfer token ownership to the basket creator
-        token.transferOwnership(msg.sender);
+        // Step 5: Deploy BasketLiquidityPool for this token
+        BasketLiquidityPool pool = new BasketLiquidityPool(
+            tokenAddress,
+            address(basketOracle),
+            basketId,
+            defaultSwapFeeBps
+        );
+        poolAddress = address(pool);
         
-        emit BasketCreatedWithToken(basketId, msg.sender, tokenAddress, name, symbol);
+        // Store pool for reference
+        basketPools[basketId] = poolAddress;
+        
+        // Step 6: Transfer ownership to the basket creator
+        token.transferOwnership(msg.sender);
+        pool.transferOwnership(msg.sender);
+        
+        emit BasketCreatedWithToken(basketId, msg.sender, tokenAddress, poolAddress, name, symbol);
     }
     
     // ============================================================
@@ -157,5 +209,14 @@ contract BasketFactory is Ownable {
      */
     function getBasketToken(uint256 basketId) external view returns (address) {
         return basketTokens[basketId];
+    }
+    
+    /**
+     * @notice Get the liquidity pool address for a basket
+     * @param basketId The basket ID
+     * @return The pool address (zero if not created via factory)
+     */
+    function getBasketPool(uint256 basketId) external view returns (address) {
+        return basketPools[basketId];
     }
 }
