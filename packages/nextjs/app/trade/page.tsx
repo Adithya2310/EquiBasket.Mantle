@@ -16,7 +16,8 @@ import { useBasketContext, useFormattedBasketData } from "~~/contexts/BasketCont
 import { useScaffoldReadContract } from "~~/hooks/scaffold-eth";
 import { formatTokenAmount } from "~~/utils/formatNumber";
 import { notification } from "~~/utils/scaffold-eth";
-import deployedContracts from "~~/contracts/deployedContracts";
+
+// import deployedContracts from "~~/contracts/deployedContracts";
 
 /**
  * Trade Page - Liquidity Pool Integration
@@ -37,10 +38,82 @@ const timeframes = ["1H", "4H", "1D", "1W", "1M"];
 type Order = { date: string; basket: string; type: "Buy" | "Sell"; amount: string; price: string };
 const orderHistory: Order[] = [];
 
-// Get the chain ID from deployed contracts and pool ABI
-const chainId = Object.keys(deployedContracts)[0] as unknown as keyof typeof deployedContracts;
-const chainContracts = deployedContracts[chainId] as any;
-const poolAbi = chainContracts?.BasketLiquidityPool?.abi || [];
+// Get the chain ID from deployed contracts
+// const chainId = Object.keys(deployedContracts)[0] as unknown as keyof typeof deployedContracts;
+
+// BasketLiquidityPool ABI - defined here because pools are dynamically deployed by BasketFactory
+// and not included in deployedContracts.ts
+const poolAbi = [
+  {
+    name: "addLiquidity",
+    type: "function",
+    stateMutability: "payable",
+    inputs: [{ name: "amountBasket", type: "uint256" }],
+    outputs: [{ name: "shares", type: "uint256" }],
+  },
+  {
+    name: "removeLiquidity",
+    type: "function",
+    stateMutability: "nonpayable",
+    inputs: [{ name: "sharesToBurn", type: "uint256" }],
+    outputs: [
+      { name: "mntOut", type: "uint256" },
+      { name: "basketOut", type: "uint256" },
+    ],
+  },
+  {
+    name: "swapMntForBasket",
+    type: "function",
+    stateMutability: "payable",
+    inputs: [],
+    outputs: [{ name: "amountBasketOut", type: "uint256" }],
+  },
+  {
+    name: "swapBasketForMnt",
+    type: "function",
+    stateMutability: "nonpayable",
+    inputs: [{ name: "amountBasketIn", type: "uint256" }],
+    outputs: [{ name: "amountMntOut", type: "uint256" }],
+  },
+  {
+    name: "getReserves",
+    type: "function",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [
+      { name: "mntReserve", type: "uint256" },
+      { name: "basketReserve", type: "uint256" },
+    ],
+  },
+  {
+    name: "lpShares",
+    type: "function",
+    stateMutability: "view",
+    inputs: [{ name: "account", type: "address" }],
+    outputs: [{ name: "", type: "uint256" }],
+  },
+  {
+    name: "totalShares",
+    type: "function",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+  },
+  {
+    name: "mntBalance",
+    type: "function",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+  },
+  {
+    name: "basketTokenBalance",
+    type: "function",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+  },
+] as const;
 
 const Trade: NextPage = () => {
   const { address: connectedAddress } = useAccount();
@@ -299,7 +372,13 @@ const Trade: NextPage = () => {
               <div className="flex-1">
                 <div className="flex items-center gap-4 mb-2">
                   <BasketSelector />
-                  <button onClick={() => { refreshPrices(); refetchReserves(); }} className="p-2 hover:bg-white/10 rounded-lg transition-colors">
+                  <button
+                    onClick={() => {
+                      refreshPrices();
+                      refetchReserves();
+                    }}
+                    className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                  >
                     <ArrowPathIcon className="w-5 h-5 text-white/50" />
                   </button>
                 </div>
@@ -328,7 +407,8 @@ const Trade: NextPage = () => {
                 <div>
                   <p className="text-sm text-warning font-medium">No Liquidity Pool for this Basket</p>
                   <p className="text-xs text-white/50 mt-1">
-                    This basket doesn&apos;t have a liquidity pool yet. A pool is created when the basket is created via BasketFactory.
+                    This basket doesn&apos;t have a liquidity pool yet. A pool is created when the basket is created via
+                    BasketFactory.
                   </p>
                 </div>
               </div>
@@ -365,10 +445,11 @@ const Trade: NextPage = () => {
                     <button
                       key={tf}
                       onClick={() => setActiveTimeframe(tf)}
-                      className={`px-4 py-2 rounded-lg font-medium transition-colors ${activeTimeframe === tf
-                        ? "bg-primary text-white"
-                        : "bg-base-300 text-white/50 hover:text-white/70"
-                        }`}
+                      className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                        activeTimeframe === tf
+                          ? "bg-primary text-white"
+                          : "bg-base-300 text-white/50 hover:text-white/70"
+                      }`}
                     >
                       {tf}
                     </button>
@@ -413,15 +494,17 @@ const Trade: NextPage = () => {
                 <div className="grid grid-cols-2 gap-2 mb-6">
                   <button
                     onClick={() => setActiveTab("buy")}
-                    className={`py-3 rounded-lg font-semibold transition-colors ${activeTab === "buy" ? "bg-success text-white" : "bg-base-300 text-white/50 hover:text-white/70"
-                      }`}
+                    className={`py-3 rounded-lg font-semibold transition-colors ${
+                      activeTab === "buy" ? "bg-success text-white" : "bg-base-300 text-white/50 hover:text-white/70"
+                    }`}
                   >
                     Buy
                   </button>
                   <button
                     onClick={() => setActiveTab("sell")}
-                    className={`py-3 rounded-lg font-semibold transition-colors ${activeTab === "sell" ? "bg-error text-white" : "bg-base-300 text-white/50 hover:text-white/70"
-                      }`}
+                    className={`py-3 rounded-lg font-semibold transition-colors ${
+                      activeTab === "sell" ? "bg-error text-white" : "bg-base-300 text-white/50 hover:text-white/70"
+                    }`}
                   >
                     Sell
                   </button>
@@ -491,10 +574,11 @@ const Trade: NextPage = () => {
                 <button
                   onClick={handleSwap}
                   disabled={!isPoolAvailable || !amount || !hasEnoughLiquidity() || isSwapping || !selectedBasketId}
-                  className={`w-full py-4 rounded-lg font-semibold text-white text-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed ${activeTab === "buy"
-                    ? "bg-success hover:bg-success/90 shadow-lg shadow-success/30"
-                    : "bg-error hover:bg-error/90 shadow-lg shadow-error/30"
-                    }`}
+                  className={`w-full py-4 rounded-lg font-semibold text-white text-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
+                    activeTab === "buy"
+                      ? "bg-success hover:bg-success/90 shadow-lg shadow-success/30"
+                      : "bg-error hover:bg-error/90 shadow-lg shadow-error/30"
+                  }`}
                 >
                   {!isPoolAvailable
                     ? "Pool Not Available"
@@ -547,8 +631,9 @@ const Trade: NextPage = () => {
                         <td className="py-4 px-4 font-semibold">{order.basket}</td>
                         <td className="py-4 px-4">
                           <span
-                            className={`px-3 py-1 rounded-full text-sm font-medium ${order.type === "Buy" ? "bg-success/20 text-success" : "bg-error/20 text-error"
-                              }`}
+                            className={`px-3 py-1 rounded-full text-sm font-medium ${
+                              order.type === "Buy" ? "bg-success/20 text-success" : "bg-error/20 text-error"
+                            }`}
                           >
                             {order.type}
                           </span>
